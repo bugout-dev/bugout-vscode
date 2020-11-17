@@ -1,0 +1,108 @@
+{
+	"name": "spire-vscode",
+	"displayName": "spire_vscode",
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.51.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:catCodicons.show"
+	],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"configuration": {
+			"title": "BugOut",
+			"properties": {
+				"BugOut.AccessToken": {
+					"type": "string",
+					"markdownDescription": "Put your bugout access token. Can find in your [Bugout account](https://alpha.bugout.dev/) page."
+				  },
+				"BugOut.Api.endpoint": {
+				"type": "string",
+				"default": "https://spire.bugout.dev",
+				"markdownDescription": "Bugout api url for access to journal."
+				}
+			}
+		},
+		"menus": {
+			"editor/title": [
+				{
+					"command": "markdown.showPreviewToSide",
+					"when": "editorLangId == markdown",
+					"alt": "markdown.showPreview",
+					"group": "navigation"
+				}
+			]
+		},
+
+		"commands": [
+			{
+				"command": "catCodicons.show",
+				"title": "Show Cat Codicons",
+				"category": "Cat Codicons"
+			},
+			{
+				"command": "Bugout.search",
+				"title": "BugOut: Search in team journal"
+			},
+			{
+				"command": "Bugout.addEntry",
+				"title": "BugOut: Add Entry to team journal"
+			},
+			{
+				"command": "Bugout.editEntry",
+				"title": "BugOut: Edit entries"
+			},
+			{
+				"command": "Bugout.deleteEntry",
+				"title": "BugOut: Delete entry from journal"
+			},
+			{
+				"command": "nodeDependencies.addEntry",
+				"title": "BugOut: Get journals"
+			}
+		],
+		"views": {
+			"explorer": [
+			  {
+				"id": "journalsView",
+				"name": "Journals",
+				"contextualTitle": "Journals Explorer"
+			  }
+			]
+		  }
+	},
+	
+	"scripts": {
+		"vscode:prepublish": "npm run package",
+		"compile": "webpack --devtool nosources-source-map --config ./build/node-extension.webpack.config.js",
+		"watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./build/node-extension.webpack.config.js",
+		"package": "webpack --mode production --config ./build/node-extension.webpack.config.js",
+		"test-compile": "tsc -p ./",
+		"test-watch": "tsc -watch -p ./",
+		"pretest": "npm run test-compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.51.0",
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.0.0",
+		"@types/node": "^12.11.7",
+		"eslint": "^7.9.0",
+		"@typescript-eslint/eslint-plugin": "^4.1.1",
+		"@typescript-eslint/parser": "^4.1.1",
+		"glob": "^7.1.6",
+		"mocha": "^8.1.3",
+		"typescript": "^4.0.2",
+		"vscode-test": "^1.4.0",
+		"ts-loader": "^8.0.3",
+		"webpack": "^4.44.1",
+		"webpack-cli": "^3.3.12",
+		"axios": "^0.21.0"
+	}
+}
