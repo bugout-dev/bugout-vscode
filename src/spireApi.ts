@@ -13,7 +13,10 @@ interface EntryContent {
     content: string;
     tags: Array<string>;
   }
-
+  interface Metadata {
+	key: string,
+	value: any
+  }
 // Big hardcode
 
 function getCurrentJournal(){
@@ -29,12 +32,12 @@ function getAccessToken(){
 
 function getDataApiProvider(){
 	
-	return 'https://d89f7db76e25.ngrok.io '
+	return 'https://551c51f8ecf1.ngrok.io'
 }
 
 
 // Class with Spire api methods
-class BugOut {
+export class BugOut {
 
 	
 
@@ -44,6 +47,7 @@ class BugOut {
 	readonly journal = getCurrentJournal();
 	readonly token = getAccessToken();
 	readonly base_url = getDataApiProvider();
+	
 	readonly header_auth = {
 		"x-bugout-client-id": "slack-some-track",
 		"Authorization": `Bearer ${this.token}`,
@@ -82,15 +86,56 @@ class BugOut {
 	}
 
 
-	async getJournals(content: EntryContent):  Promise<string> {
+	async getJournals():  Promise<any> {
+		console.log('getJournals');
 		let params = { headers : this.header_auth}
-		const result  = await axios.default.delete(`${this.base_url}/journals`,params)
+		console.log(`${this.base_url}/journals`);
+		console.log(params);
+		const result  = await axios.default.get(`${this.base_url}/journals`,params)
+		let data = result.data.journals;
+		console.log(data);
+		return data;
+	}
+
+	async getMostUsedTags(journal_id: string):  Promise<any> {
+		console.log('getJournals');
+		let params = { headers : this.header_auth}
+		console.log(`${this.base_url}/${journal_id}/tags`);
+		console.log(params);
+		const result  = await axios.default.get(`${this.base_url}/journals/${journal_id}/tags`,params)
 		let data = result.data;
-		return JSON.stringify(data);
+		console.log(data);
+		return data;
+	}
+
+
+	
+	async getJournalsTreeView():  Promise<TreeItem[]> {
+		
+		const journals_response = await this.getJournals();
+		console.log(journals_response)
+		let response_journals = [];
+		for (var journal of journals_response) {
+			console.log(journal)
+			
+			let tags_option = [];
+			let tags = await this.getMostUsedTags(journal.id);
+			for (var tag of tags) {
+				tags_option.push(new TreeItem(`${tag[0]} (${tag[1]})`))
+			}
+
+			let tree = new TreeItem(
+				journal.id, tags_option)
+			
+
+			response_journals.push(tree)
+			// Use `key` and `value`
+		}
+		return  response_journals;
 	}
 }
 
-class TreeDataProvider implements vscode.TreeDataProvider<TreeItem> {
+ export class TreeDataProvider implements vscode.TreeDataProvider<TreeItem> {
     onDidChangeTreeData?: vscode.Event<TreeItem|null|undefined>|undefined;
   
     data: TreeItem[];

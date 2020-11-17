@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:catCodicons.show"
+		"*"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {

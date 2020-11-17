@@ -7,7 +7,7 @@ import * as axios from 'axios';
 // import { FileExplorer } from './fileExplorer';
 // import { TestView } from './testView';
 
-
+import {TreeDataProvider, BugOut} from './spireApi';
 
 // Intresting can i extract datatypes using protobuff???
 interface Entry {
@@ -23,15 +23,17 @@ interface EntryContent {
     tags: Array<string>;
   }
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 
       //Create your objects - Needs to be a well-formed JSON object.
 	let token = '';
 
 	// Samples of `window.registerSpireDataProvider`
-	const Provider = new spireApiProvider(vscode.workspace.rootPath);
+	const Provider = new BugOut(vscode.workspace.rootPath);
 	// vscode.window.registerTreeDataProvider('Bugout.getJournals', nodeDependenciesProvider);
-	// vscode.window.registerTreeDataProvider('nodeDependencies', spireApiProvider);
+	console.log('init start');
+	let journals = await Provider.getJournalsTreeView()
+	vscode.window.registerTreeDataProvider('journalsView', new TreeDataProvider(journals));
 	vscode.commands.registerCommand('Bugout.search', (q: string)  => {Provider.search(q)});
 	vscode.commands.registerCommand('Bugout.addEntry', (entry: Entry) => vscode.window.showInformationMessage(`Successfully called add entry.`));
 	vscode.commands.registerCommand('Bugout.editEntry', (entry: Entry) => vscode.window.showInformationMessage(`Successfully called edit entry ${entry.id}.`));
@@ -58,7 +60,7 @@ function syntaxHighlight(json: string) {
         if (/^"/.test(match)) {
             if (/:$/.test(match)) {
                 cls = 'key';
-            } else {
+            } else {``
                 cls = 'string';
             }
         } else if (/true|false/.test(match)) {
@@ -87,7 +89,7 @@ function getAccessToken(){
 
 function getDataApiProvider(){
 	
-	return 'https://d89f7db76e25.ngrok.io '
+	return 'https://530882b6ecee.ngrok.io'
 }
 
 
@@ -142,7 +144,7 @@ class spireApiProvider {
 
 	async getJournals(content: EntryContent):  Promise<string> {
 		let params = { headers : this.header_auth}
-		const result  = await axios.default.delete(`${this.base_url}/journals`,params)
+		const result  = await axios.default.get(`${this.base_url}/journals`,params)
 		let data = result.data;
 		return JSON.stringify(data);
 	}
