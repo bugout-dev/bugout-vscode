@@ -87,24 +87,16 @@ export class BugOut {
 
 
 	async getJournals():  Promise<any> {
-		console.log('getJournals');
 		let params = { headers : this.header_auth}
-		console.log(`${this.base_url}/journals`);
-		console.log(params);
 		const result  = await axios.default.get(`${this.base_url}/journals`,params)
 		let data = result.data.journals;
-		console.log(data);
 		return data;
 	}
 
 	async getMostUsedTags(journal_id: string):  Promise<any> {
-		console.log('getJournals');
-		let params = { headers : this.header_auth}
-		console.log(`${this.base_url}/${journal_id}/tags`);
-		console.log(params);
+		let params = { headers : this.header_auth};
 		const result  = await axios.default.get(`${this.base_url}/journals/${journal_id}/tags`,params)
 		let data = result.data;
-		console.log(data);
 		return data;
 	}
 
