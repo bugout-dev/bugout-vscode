@@ -1,8 +1,17 @@
 
-
 interface Entry {
-    entry_id: string;
-    entry_title: string;
-    entry_content: string;
-    entry_tags: Array<string>;
-  }
+  id: string;
+  title: string;
+  content: string;
+  tags: Array<string>;
+}
+
+interface EntryContent {
+  title: string;
+  content: string;
+  tags: Array<string>;
+}
+interface Metadata {
+key: string,
+value: any
+}

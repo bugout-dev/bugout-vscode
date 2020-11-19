@@ -1,22 +1,7 @@
 import * as vscode from 'vscode';
 import * as axios from 'axios';
 
-interface Entry {
-    id: string;
-    title: string;
-    content: string;
-    tags: Array<string>;
-  }
 
-interface EntryContent {
-    title: string;
-    content: string;
-    tags: Array<string>;
-  }
-  interface Metadata {
-	key: string,
-	value: any
-  }
 // Big hardcode
 
 function getCurrentJournal(){
@@ -32,7 +17,7 @@ function getAccessToken(){
 
 function getDataApiProvider(){
 	
-	return 'https://551c51f8ecf1.ngrok.io'
+	return 'https://8cd9d3298c65.ngrok.io'
 }
 
 
@@ -102,62 +87,66 @@ export class BugOut {
 
 
 	
-	async getJournalsTreeView():  Promise<TreeItem[]> {
+	// async getJournalsTreeView():  Promise<TreeItem[]> {
 		
-		const journals_response = await this.getJournals();
-		console.log(journals_response)
-		let response_journals = [];
-		for (var journal of journals_response) {
-			console.log(journal)
+	// 	const journals_response = await this.getJournals();
+	// 	console.log(journals_response)
+	// 	let response_journals = [];
+	// 	for (var journal of journals_response) {
+	// 		console.log(journal)
 			
-			let tags_option = [];
-			let tags = await this.getMostUsedTags(journal.id);
-			for (var tag of tags) {
-				tags_option.push(new TreeItem(`${tag[0]} (${tag[1]})`))
-			}
+	// 		let tags_option = [];
+	// 		let tags = await this.getMostUsedTags(journal.id);
+	// 		for (var tag of tags) {
+	// 			tags_option.push(new TreeItem(`${tag[0]} (${tag[1]})`))
+	// 		}
 
-			let tree = new TreeItem(
-				journal.id, tags_option)
+	// 		let tree = new TreeItem(
+	// 			journal.id, tags_option)
 			
 
-			response_journals.push(tree)
-			// Use `key` and `value`
-		}
-		return  response_journals;
-	}
+	// 		response_journals.push(tree)
+	// 		// Use `key` and `value`
+	// 	}
+	// 	return  response_journals;
+	// }
 }
 
- export class TreeDataProvider implements vscode.TreeDataProvider<TreeItem> {
-    onDidChangeTreeData?: vscode.Event<TreeItem|null|undefined>|undefined;
+//  export class TreeDataProvider implements vscode.TreeDataProvider<TreeItem> {
+//     onDidChangeTreeData?: vscode.Event<TreeItem|null|undefined>|undefined;
   
-    data: TreeItem[];
+//     data: TreeItem[];
   
-    constructor(fill_data: TreeItem[]) {
-      this.data = fill_data;
+//     constructor(fill_data: TreeItem[]) {
+//       this.data = fill_data;
 
 
-    }
+//     }
   
-    getTreeItem(element: TreeItem): vscode.TreeItem|Thenable<vscode.TreeItem> {
-      return element;
-    }
+//     getTreeItem(element: TreeItem): vscode.TreeItem|Thenable<vscode.TreeItem> {
+// 	   console.log('getTreeItem');
+// 	  console.log(element);
+//       return element;
+//     }
   
-    getChildren(element?: TreeItem|undefined): vscode.ProviderResult<TreeItem[]> {
-      if (element === undefined) {
-        return this.data;
-      }
-      return element.children;
-    }
-  }
+//     getChildren(element?: TreeItem|undefined): vscode.ProviderResult<TreeItem[]> {
+//       if (element === undefined) {
+//         return this.data;
+// 	  }
+// 	  console.log('getChildren');
+// 	  console.log(element.children);
+//       return element.children;
+//     }
+//   }
   
-  class TreeItem extends vscode.TreeItem {
-    children: TreeItem[]|undefined;
+//   class TreeItem extends vscode.TreeItem {
+//     children: TreeItem[]|undefined;
   
-    constructor(label: string, children?: TreeItem[]) {
-      super(
-          label,
-          children === undefined ? vscode.TreeItemCollapsibleState.None :
-                                   vscode.TreeItemCollapsibleState.Expanded);
-      this.children = children;
-    }
-  }
+//     constructor(label: string, children?: TreeItem[]) {
+//       super(
+//           label,
+//           children === undefined ? vscode.TreeItemCollapsibleState.None :
+//                                    vscode.TreeItemCollapsibleState.Expanded);
+//       this.children = children;
+//     }
+//   }

@@ -1,27 +1,25 @@
 import * as vscode from 'vscode';
 import * as axios from 'axios';
-//import {Entry} from './datatype';
-// import { DepNodeProvider, Dependency } from './nodeDependencies';
-// import { JsonOutlineProvider } from './jsonOutline';
-// import { FtpExplorer } from './ftpExplorer';
-// import { FileExplorer } from './fileExplorer';
-// import { TestView } from './testView';
+import { showInputBox } from './search';
+import { admonitions } from 'remark-admonitions';
+import * as html from 'remark-html';
+import * as remark from 'remark';
+import * as path from 'path';
 
-import {TreeDataProvider, BugOut} from './spireApi';
+const editor = vscode.window.activeTextEditor;
+//import {Entry} from './datatype';
+
+import { BugOut} from './spireApi';
 
 // Intresting can i extract datatypes using protobuff???
-interface Entry {
-    id: string;
-    title: string;
-    content: string;
-    tags: Array<string>;
-  }
 
-interface EntryContent {
-    title: string;
-    content: string;
-    tags: Array<string>;
-  }
+
+function markdownCompiler(): any {
+    const admonitionsOptions = {};
+    return remark()
+        .use(html)
+        .use(admonitions, admonitionsOptions);
+}
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -32,22 +30,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	const Provider = new BugOut(vscode.workspace.rootPath);
 	// vscode.window.registerTreeDataProvider('Bugout.getJournals', nodeDependenciesProvider);
 	console.log('init start');
-	let journals = await Provider.getJournalsTreeView()
-	vscode.window.registerTreeDataProvider('journalsView', new TreeDataProvider(journals));
-	vscode.commands.registerCommand('Bugout.search', (q: string)  => {Provider.search(q)});
+	//let journals = await Provider.getJournalsTreeView()
+	//vscode.window.registerTreeDataProvider('journalsView', new TreeDataProvider(journals));
+	vscode.commands.registerCommand('Bugout.search', ()  => { searchInput(context, context.extensionUri);});
 	vscode.commands.registerCommand('Bugout.addEntry', (entry: Entry) => vscode.window.showInformationMessage(`Successfully called add entry.`));
 	vscode.commands.registerCommand('Bugout.editEntry', (entry: Entry) => vscode.window.showInformationMessage(`Successfully called edit entry ${entry.id}.`));
 	vscode.commands.registerCommand('Bugout.deleteEntry', (entry: Entry) => vscode.window.showInformationMessage(`Successfully called delete entry on ${entry.id}.`));
-	
-    
-	//let orange = vscode.window.createOutputChannel("Orange");
-	//orange.appendLine("sdasdashd");
-	//console.log()
-	context.subscriptions.push(
-		vscode.commands.registerCommand('catCodicons.show', () => {
-			CatCodiconsPanel.show(context.extensionUri);
-		})
-	);
 }
 
 function syntaxHighlight(json: string) {
@@ -72,117 +60,92 @@ function syntaxHighlight(json: string) {
     });
 }
 
+async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode.Uri,) { 
+	const input = await vscode.window.showInputBox();
 
+	searchResultsProvider.getSearch(context,extensionUri,input)
 
-// Big hardcode
-
-function getCurrentJournal(){
-	
-
-	return 'd6c9fbf3-e4c0-4d1a-8129-e9e6768d1054'
-}
-
-function getAccessToken(){
-
-	return '02c27666-9b99-487b-a69d-accadfad65fa'
-}
-
-function getDataApiProvider(){
-	
-	return 'https://530882b6ecee.ngrok.io'
 }
 
 
-// Class with Spire api methods
-class spireApiProvider {
 
-	
+class searchResultsProvider {
 
-	private _onDidChangeTreeData = new vscode.EventEmitter();
-	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-	// incorrect read only not give change that variable
-	readonly journal = getCurrentJournal();
-	readonly token = getAccessToken();
-	readonly base_url = getDataApiProvider();
-	readonly header_auth = {
-		"x-bugout-client-id": "slack-some-track",
-		"Authorization": `Bearer ${this.token}`,
-	}
+	public static readonly viewType = 'Bugout-search';
 
-	constructor(private workspaceRoot: any) {
-	}
-
-	async search(q: string):  Promise<string> {
-		let params = { headers : this.header_auth}
-		const result  = await axios.default.get(`${this.base_url}/journals/${this.journal}/search?q=11`,params)
-		let data = result.data;
-		return JSON.stringify(data);
-	}
-
-	async createEntry(content: EntryContent):  Promise<string> {
-		
-		let params = { headers : this.header_auth}
-		const result  = await axios.default.post(`${this.base_url}/journals/${this.journal}/entry`,params)
-		let data = result.data;
-		return JSON.stringify(data);
-	}
-
-	async editEntry(content: EntryContent):  Promise<string> {
-		let params = { headers : this.header_auth}
-		const result  = await axios.default.put(`${this.base_url}/journals/${this.journal}/search?q=11`,params)
-		let data = result.data;
-		return JSON.stringify(data);
-	}
-
-	async deleteEntry(content: EntryContent):  Promise<string> {
-		let params = { headers : this.header_auth}
-		const result  = await axios.default.delete(`${this.base_url}/journals/${this.journal}/search?q=11`,params)
-		let data = result.data;
-		return JSON.stringify(data);
-	}
-
-
-	async getJournals(content: EntryContent):  Promise<string> {
-		let params = { headers : this.header_auth}
-		const result  = await axios.default.get(`${this.base_url}/journals`,params)
-		let data = result.data;
-		return JSON.stringify(data);
-	}
-}
-class CatCodiconsPanel {
-
-	public static readonly viewType = 'catCodicons';
-
-	public static async show(extensionUri: vscode.Uri) {
+	public static async getSearch(context: vscode.ExtensionContext,extensionUri: vscode.Uri, query?: string, tags?: Array<string>) {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
-
+		
 		const panel = vscode.window.createWebviewPanel(
-			CatCodiconsPanel.viewType,
-			"Cat Codicons",
-			column || vscode.ViewColumn.Beside
+			searchResultsProvider.viewType,
+			"Search in journal",
+			column || vscode.ViewColumn.Beside,
+			{
+				// Enable scripts in the webview
+				enableScripts: true,
+				retainContextWhenHidden: true,
+				localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'assets'))]
+			}
+			
 		);
+		
+		panel.webview.html =  await this._getHtmlForWebview(panel.webview, extensionUri, query);
 
-		panel.webview.html =  await this._getHtmlForWebview(panel.webview, extensionUri);
+		panel.webview.onDidReceiveMessage(
+			async message => {
+				console.log(message.command)
+			  switch (message.command) {
+				case 'search':
+				
+				  panel.webview.html =  await this._getHtmlForWebview(panel.webview, extensionUri, message.text);
+
+				  console.log('search resive')
+				  return;
+			  }
+			},
+			undefined,
+			context.subscriptions
+		  );
+		
 	}
 
-	private static async _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri) {
+	private static async _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri, query?: string) {
 
 		let params = { headers : {
 			"x-bugout-client-id": "slack-some-track",
 			"Authorization": "Bearer 02c27666-9b99-487b-a69d-accadfad65fa",
 		}}
 		let orange = vscode.window.createOutputChannel("Orange");
-		const result  = await axios.default.get('https://72cc70fd049b.ngrok.io/journals/d6c9fbf3-e4c0-4d1a-8129-e9e6768d1054/search?q=11',params) ///.then(function (response) {return response.data})
-		let data = result.data;
+		console.log(query);
+		const result  = await axios.default.get(`https://8cd9d3298c65.ngrok.io/journals/d6c9fbf3-e4c0-4d1a-8129-e9e6768d1054/search?q=${query}`,params) ///.then(function (response) {return response.data})
+		let data = result.data.results;
+		console.log(data);
+		
 
 		// Get resource paths
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'styles.css'));
 		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.css'));
 		const codiconsFontUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.ttf'));
 
+		let templateContent = '<div><div>title</div><div>tags</div><div style="background-color:  rgba(170, 170, 170, 0.1); border-radius: 2%;">content</div></div>';
 
+
+		let search_html_block = '';
+		for (var entry of data) {
+			console.log(entry)
+			
+			let entry_represend = templateContent;
+			
+			entry_represend = entry_represend.replace('title',await markdownCompiler().process('### ' + entry.title + '\n'));
+			entry_represend = entry_represend.replace('tags',await markdownCompiler().process('`' + entry.tags.join('` `') + '`'));
+			entry_represend = entry_represend.replace('content',await markdownCompiler().process(entry.content));
+
+
+			search_html_block = search_html_block + '<hr class="solid">' + entry_represend
+			// Use `key` and `value`
+		}
 
 
 		return `<!DOCTYPE html>
@@ -193,16 +156,46 @@ class CatCodiconsPanel {
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
 				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${codiconsFontUri}; style-src ${webview.cspSource} ${codiconsUri};">
+				<!--<meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${codiconsFontUri}; style-src ${webview.cspSource} ${codiconsUri};">-->
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<title>Cat Coding</title>
-				<link href="${styleUri}" rel="stylesheet" />
-				<link href="${codiconsUri}" rel="stylesheet" />
+				<!--<link href="${styleUri}" rel="stylesheet" />-->
+				<!--<link href="${codiconsUri}" rel="stylesheet" />-->
+				<style>
+					hr.solid {
+						border-top: 2px solid #000;
+						border-color: rgba(90, 90, 90, 0.1);
+					}
+
+					label {
+						display: block;
+						font: 1rem 'Fira Sans', sans-serif;
+					}
+					
+					input,
+					label {
+						margin: .4rem 0;
+					}
+				</style>
 			</head>
 			<body>
-				<h1>codicons</h1>
-				<div id="icons">
-					<div class="icon"><i class="codicon codicon-account">${JSON.stringify(data, null, 2)}</i> account</div>
+			
+			<div id="icons">
+				<input type="search" id="search" name="q"
+				aria-label="Search through site content">
+
+				<script>
+					const vscode = acquireVsCodeApi();
+					function useAdvise() {
+						let text_ = document.querySelector("#search").value;
+						vscode.postMessage({command: 'search',text: text_})
+					}
+			  	</script>
+				
+				<button onclick="useAdvise()">Search</button>
+
+	 
+					<div class="icon"><i class="codicon codicon-account">${search_html_block}</i> account</div>
 				</div>
 			</body>
 			</html>`;
