@@ -32,13 +32,23 @@
 			"editor/title": [
 				{
 					"command": "markdown.showPreviewToSide",
-					"when": "editorLangId == markdown",
 					"alt": "markdown.showPreview",
 					"group": "navigation"
+				}
+			],
+			"editor/context": [
+				{
+				  "command": "Bugout.addEntry",
+				  "group": "navigation"
 				}
 			]
 		},
 		"commands": [
+			{
+				"command": "catCodicons.show",
+				"title": "Show Cat Codicons",
+				"category": "Cat Codicons"
+			},
 			{
 				"command": "catCodicons.show",
 				"title": "Show Cat Codicons",
@@ -50,7 +60,7 @@
 			},
 			{
 				"command": "Bugout.addEntry",
-				"title": "BugOut: Add Entry to team journal"
+				"title": "Add"
 			},
 			{
 				"command": "Bugout.editEntry",
