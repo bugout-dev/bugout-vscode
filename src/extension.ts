@@ -5,6 +5,9 @@ import { admonitions } from 'remark-admonitions';
 import * as html from 'remark-html';
 import * as remark from 'remark';
 import * as path from 'path';
+import * as fs from 'fs';
+import * as showdown from 'showdown';
+import * as handlebars from 'handlebars';
 
 const editor = vscode.window.activeTextEditor;
 //import {Entry} from './datatype';
@@ -14,17 +17,10 @@ import { BugOut} from './spireApi';
 // Intresting can i extract datatypes using protobuff???
 
 
-function markdownCompiler(): any {
-    const admonitionsOptions = {};
-    return remark()
-        .use(html)
-        .use(admonitions, admonitionsOptions);
-}
-
 export async function activate(context: vscode.ExtensionContext) {
 
-      //Create your objects - Needs to be a well-formed JSON object.
-	let token = '';
+    //Create your objects - Needs to be a well-formed JSON object.
+	let bugoutWebView: vscode.WebviewPanel | undefined = undefined;
 
 	// Samples of `window.registerSpireDataProvider`
 	const Provider = new BugOut(vscode.workspace.rootPath);
@@ -32,10 +28,18 @@ export async function activate(context: vscode.ExtensionContext) {
 	console.log('init start');
 	//let journals = await Provider.getJournalsTreeView()
 	//vscode.window.registerTreeDataProvider('journalsView', new TreeDataProvider(journals));
-	vscode.commands.registerCommand('Bugout.search', ()  => { searchInput(context, context.extensionUri);});
-	vscode.commands.registerCommand('Bugout.addEntry', (entry: Entry) => vscode.window.showInformationMessage(`Successfully called add entry.`));
-	vscode.commands.registerCommand('Bugout.editEntry', (entry: Entry) => vscode.window.showInformationMessage(`Successfully called edit entry ${entry.id}.`));
-	vscode.commands.registerCommand('Bugout.deleteEntry', (entry: Entry) => vscode.window.showInformationMessage(`Successfully called delete entry on ${entry.id}.`));
+	//let provider = new searchResultsProvider(context.extensionUri);
+	vscode.commands.registerCommand('Bugout.search', ()  => { searchInput(context, context.extensionUri,bugoutWebView);});
+	vscode.commands.registerCommand('Bugout.addEntry', (entry: Entry) => {editEntry(context, context.extensionUri, bugoutWebView);});
+}
+
+
+function getBugoutConfig() {
+	const configuration = vscode.workspace.getConfiguration();
+	const api = configuration.get<string>('BugOut.Api.endpoint');
+	const token = configuration.get<string>('BugOut.AccessToken');
+
+	return [api, token];
 }
 
 function syntaxHighlight(json: string) {
@@ -60,50 +64,96 @@ function syntaxHighlight(json: string) {
     });
 }
 
-async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode.Uri,) { 
-	const input = await vscode.window.showInputBox();
+async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode.Uri,panel: vscode.WebviewPanel | undefined) { 
+	const query = await vscode.window.showInputBox();
 
-	searchResultsProvider.getSearch(context,extensionUri,input)
+	const config = getBugoutConfig();
+	const api = config[0];
+	const token = config[1];
+
+	let params = { headers : {"Authorization": `Bearer ${token}`}};
+	const result  = await axios.default.get(`${api}/journals`,params);
+	const journals = result.data.journals;
+	let journals_options: any = [];
+	for (var jornal of journals) {
+		journals_options.push({label: jornal.name , picked: false, id: jornal.id});
+	}
+	console.log(journals);
+
+	const selected_journal: any= await vscode.window.showQuickPick(journals_options);
+	if (selected_journal == undefined) {
+		return;
+	}
+	console.log(typeof selected_journal)
+	searchResultsProvider.getSearch(context,extensionUri, panel, selected_journal.id, query)
 
 }
 
+async function editEntry(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined) { 
 
+	searchResultsProvider.generateEditEntry(context,extensionUri, panel)
+
+}
+
+function getNonce() {
+	let text = '';
+	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	for (let i = 0; i < 32; i++) {
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+	return text;
+}
 
 class searchResultsProvider {
 
 	public static readonly viewType = 'Bugout-search';
+	static _extensionUri: vscode.Uri;
 
-	public static async getSearch(context: vscode.ExtensionContext,extensionUri: vscode.Uri, query?: string, tags?: Array<string>) {
+
+
+	public static async getSearch(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined, journal: string, query?: string, tags?: Array<string>) {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
+
+
 		
-		const panel = vscode.window.createWebviewPanel(
-			searchResultsProvider.viewType,
-			"Search in journal",
-			column || vscode.ViewColumn.Beside,
-			{
-				// Enable scripts in the webview
+		if (panel == undefined) {
+
+			//
+			panel = vscode.window.createWebviewPanel(
+				searchResultsProvider.viewType,
+				"[Bugout] journals",
+				vscode.ViewColumn.Beside
+				
+			);
+
+			panel.webview.options = {
 				enableScripts: true,
-				retainContextWhenHidden: true,
-				localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'assets'))]
-			}
-			
-		);
+				enableCommandUris: true,
+				localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'media'))] 
+			};
+		}
 		
-		panel.webview.html =  await this._getHtmlForWebview(panel.webview, extensionUri, query);
+		panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, journal, query);
 
 		panel.webview.onDidReceiveMessage(
 			async message => {
-				console.log(message.command)
 			  switch (message.command) {
-				case 'search':
-				
-				  panel.webview.html =  await this._getHtmlForWebview(panel.webview, extensionUri, message.text);
 
-				  console.log('search resive')
-				  return;
+				case 'search':
+					console.log(message)
+					if (panel != undefined) {
+						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, message.journal, message.query);
+					}
+				  
+				
+				case 'swithcFormat':
+					if (panel != undefined) {
+						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, message.journal, message.query, message.format);
+					}
 			  }
+			  return;
 			},
 			undefined,
 			context.subscriptions
@@ -111,93 +161,203 @@ class searchResultsProvider {
 		
 	}
 
-	private static async _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri, query?: string) {
+
+	public static async generateEditEntry(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined) {
+
+
+
+		const config = getBugoutConfig();
+		const api = config[0];
+		const token = config[1];
+
+		var editor = vscode.window.activeTextEditor;
+
+		if (!editor) {
+			return; // No open text editor
+		}
+
+		var selection = editor.selection;
+		var text = editor.document.getText(selection);
+
+		if (panel == undefined){
+
+			const column = vscode.window.activeTextEditor
+			? vscode.window.activeTextEditor.viewColumn
+			: undefined;
+
+			panel = vscode.window.createWebviewPanel(
+				searchResultsProvider.viewType,
+				"[Bugout] journals",
+				vscode.ViewColumn.Beside
+			);
+
+			panel.webview.options = {
+				// Allow scripts in the webview
+				enableScripts: true,
+				enableCommandUris: true,
+				localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))] //[context.extensionUri]
+			};
+
+			console.log(panel.webview,context.extensionPath,text)
+			panel.webview.html =  await this._getEditEntryHtmlForWebview(panel.webview, context.extensionPath, text);
+
+		} else {
+			console.log(panel.webview,context.extensionPath,text)
+			panel.webview.html =  await this._getEditEntryHtmlForWebview(panel.webview, context.extensionPath, text);
+		}
+
+		panel.webview.onDidReceiveMessage(
+			async message => {
+				console.log(message.command)
+			  switch (message.command) {
+
+				case 'search':
+					if (panel != undefined) {
+						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, message.journal, message.text);
+					}
+
+				case 'createNewEntry':
+
+					let entry = message.entry;
+
+
+					const options = {
+						headers : {
+							"x-bugout-client-id": "slack-some-track",
+							"Authorization": `Bearer ${token}`,
+						}
+					  };
+			
+					let payload  = {
+						"title": entry.title,
+						"content": entry.content,
+						"tags": entry.tags.split(','),
+						"context_id": 'context_id',
+						"context_url": 'permalink',
+						"context_type": "vscode",
+					}
+					console.log(payload);
+					await axios.default.post(`${api}/journals/d6c9fbf3-e4c0-4d1a-8129-e9e6768d1054/entries`, payload, options); ///.then(function (response) {return response.data})
+					
+
+					if (panel != undefined) {
+						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview,  context.extensionPath, extensionUri, '');
+					}
+			  }
+			},
+			undefined,
+			context.subscriptions
+		  );
+		
+
+
+	}	
+
+	private static async _getSearchHtmlForWebview(webview: vscode.Webview, extensionPath: string, extensionUri: vscode.Uri, journal: string, query?: string, formating_off?: boolean) {
+
+		
+		const config = getBugoutConfig();
+		const api = config[0];
+		const token = config[1];
+
+
+		let md = new showdown.Converter({tables: true,
+			simplifiedAutoLink: true,
+			strikethrough: true,
+			tasklists: true,
+			ghCodeBlocks: true,
+		    });
 
 		let params = { headers : {
 			"x-bugout-client-id": "slack-some-track",
-			"Authorization": "Bearer 02c27666-9b99-487b-a69d-accadfad65fa",
+			"Authorization": `Bearer ${token}`,
 		}}
-		let orange = vscode.window.createOutputChannel("Orange");
-		console.log(query);
-		const result  = await axios.default.get(`https://8cd9d3298c65.ngrok.io/journals/d6c9fbf3-e4c0-4d1a-8129-e9e6768d1054/search?q=${query}`,params) ///.then(function (response) {return response.data})
+		console.log(`${api}/journals/${journal}/search?q=${query}`);
+		const result  = await axios.default.get(`${api}/journals/${journal}/search?q=${query}`,params) ///.then(function (response) {return response.data})
 		let data = result.data.results;
-		console.log(data);
-		
 
 		// Get resource paths
-		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'styles.css'));
+		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'media', 'styles.css'));
 		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.css'));
 		const codiconsFontUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.ttf'));
-
+		
 		let templateContent = '<div><div>title</div><div>tags</div><div style="background-color:  rgba(170, 170, 170, 0.1); border-radius: 2%;">content</div></div>';
 
 
 		let search_html_block = '';
 		for (var entry of data) {
-			console.log(entry)
+			//console.log(entry)
 			
 			let entry_represend = templateContent;
-			
-			entry_represend = entry_represend.replace('title',await markdownCompiler().process('### ' + entry.title + '\n'));
-			entry_represend = entry_represend.replace('tags',await markdownCompiler().process('`' + entry.tags.join('` `') + '`'));
-			entry_represend = entry_represend.replace('content',await markdownCompiler().process(entry.content));
+			if (formating_off){
+				entry_represend = entry_represend.replace('title', entry.title);
+				entry_represend = entry_represend.replace('tags', entry.tags.join(' ') );
+				entry_represend = entry_represend.replace('content', entry.content);
+				//console.log(entry.content);
 
+			}else{
+				///console.log(entry.content);
+				entry_represend = entry_represend.replace('title', md.makeHtml('### ' + entry.title + '\n'));
+				entry_represend = entry_represend.replace('tags', md.makeHtml('`' + entry.tags.join('` `') + '`'));
+				entry_represend = entry_represend.replace('content', md.makeHtml(entry.content));
+
+			}
 
 			search_html_block = search_html_block + '<hr class="solid">' + entry_represend
 			// Use `key` and `value`
 		}
 
+		let prerender_data = {
+			search_html_block: search_html_block,
+			query: query,
+			journal: journal,
+		}
 
-		return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-				<!--
-					Use a content security policy to only allow loading images from https or from our extension directory,
-					and only allow scripts that have a specific nonce.
-				-->
-				<!--<meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${codiconsFontUri}; style-src ${webview.cspSource} ${codiconsUri};">-->
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>Cat Coding</title>
-				<!--<link href="${styleUri}" rel="stylesheet" />-->
-				<!--<link href="${codiconsUri}" rel="stylesheet" />-->
-				<style>
-					hr.solid {
-						border-top: 2px solid #000;
-						border-color: rgba(90, 90, 90, 0.1);
-					}
+		const bars_template = fs.readFileSync(path.join(extensionPath,'src/views/search.html'), 'utf-8');
+		console.log(bars_template);
+		const template = handlebars.compile(bars_template);
+		console.log(template(prerender_data));
+		return template(prerender_data);
+	}
 
-					label {
-						display: block;
-						font: 1rem 'Fira Sans', sans-serif;
-					}
-					
-					input,
-					label {
-						margin: .4rem 0;
-					}
-				</style>
-			</head>
-			<body>
-			
-			<div id="icons">
-				<input type="search" id="search" name="q"
-				aria-label="Search through site content">
+	private static async _getEditEntryHtmlForWebview(webview: vscode.Webview, extentionPath: string, content: string) {
+		//console.log(this._extensionUri, 'media', 'fastselect.js');
 
-				<script>
-					const vscode = acquireVsCodeApi();
-					function useAdvise() {
-						let text_ = document.querySelector("#search").value;
-						vscode.postMessage({command: 'search',text: text_})
-					}
-			  	</script>
-				
-				<button onclick="useAdvise()">Search</button>
 
-	 
-					<div class="icon"><i class="codicon codicon-account">${search_html_block}</i> account</div>
-				</div>
-			</body>
-			</html>`;
+		const config = getBugoutConfig();
+		const api = config[0];
+		const token = config[1];
+
+
+		let params = { headers : {
+			"x-bugout-client-id": "slack-some-track",
+			"Authorization": `Bearer ${token}`,
+		}};
+		const result  = await axios.default.get(`${api}/journals/d6c9fbf3-e4c0-4d1a-8129-e9e6768d1054/tags`,params); ///.then(function (response) {return response.data})
+		let tags = result.data;
+		console.log(tags);
+		var tags_option: any[] = [];
+
+		for (var tag of tags) {
+			tags_option.push({"text": tag[0], "value":tag[0]})
+		}
+		console.log(JSON.stringify(tags_option));
+		const scriptPathOnDisk = vscode.Uri.file(path.join(extentionPath, 'src/media', 'fastselect.js'));
+		const styleFastSelectPath = vscode.Uri.file(path.join(extentionPath, 'src/media', 'fastselect.css'));
+		console.log(scriptPathOnDisk);
+		console.log(styleFastSelectPath);
+		const styleSrc = webview.asWebviewUri(scriptPathOnDisk);
+		const scriptSrc = webview.asWebviewUri(scriptPathOnDisk);
+
+		let data = {
+			content: content,
+			tags_option: JSON.stringify(tags_option)
+		}
+
+		const bars_template = fs.readFileSync(path.join(extentionPath,'src/views/createEntry.html'), 'utf-8');
+		//console.log(bars_template);
+		const template = handlebars.compile(bars_template);
+		//console.log(template(data));
+		return template(data);
 	}
 }

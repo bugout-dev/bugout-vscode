@@ -17,7 +17,7 @@ function getAccessToken(){
 
 function getDataApiProvider(){
 	
-	return 'https://8cd9d3298c65.ngrok.io'
+	return 'https://08195ea00112.ngrok.io'
 }
 
 

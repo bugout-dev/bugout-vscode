@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--
+        Use a content security policy to only allow loading images from https or from our extension directory,
+        and only allow scripts that have a specific nonce.
+    -->
+    <!--<meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${codiconsFontUri}; style-src ${webview.cspSource} ${codiconsUri};">-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Coding</title>
+    <link href="${styleUri}" rel="stylesheet" />
+    <link href="${codiconsUri}" rel="stylesheet" />
+    <style>
+        hr.solid {
+            border-top: 2px solid #000;
+            border-color: rgba(90, 90, 90, 0.1);
+        }
+
+        label {
+            display: block;
+            font: 1rem 'Fira Sans', sans-serif;
+        }
+        
+        input,
+        label {
+            margin: .4rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="query" data= "{{{ query }}}"></div>
+
+<div id="icons">
+    <input type="search" id="search" name="q"
+    aria-label="Search through site content">
+    <script>
+        const vscode = acquireVsCodeApi();
+        function useAdvise() {
+            let text_ = document.querySelector("#search").value;
+            vscode.postMessage({command: 'search', query: text_, journal: "{{ journal }}" })
+        }
+    </script>
+    <!-- <button id="mrkdown">F</button>
+    <script>
+        function useAdvise() {
+            let text_ = document.querySelector("#mrkdown").value;
+            vscode.postMessage({command: 'search',text: text_})
+        }
+    </script>
+     -->
+    <button onclick="useAdvise()">Search</button>
+
+
+        <div>{{{ search_html_block }}}</div>
+    </div>
+</body>
+</html>
