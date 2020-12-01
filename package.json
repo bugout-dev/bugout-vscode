@@ -38,29 +38,19 @@
 			],
 			"editor/context": [
 				{
-				  "command": "Bugout.addEntry",
-				  "group": "navigation"
+					"command": "Bugout.addEntry",
+					"group": "navigation"
 				}
 			]
 		},
 		"commands": [
-			{
-				"command": "catCodicons.show",
-				"title": "Show Cat Codicons",
-				"category": "Cat Codicons"
-			},
-			{
-				"command": "catCodicons.show",
-				"title": "Show Cat Codicons",
-				"category": "Cat Codicons"
-			},
 			{
 				"command": "Bugout.search",
 				"title": "BugOut: Search in team journal"
 			},
 			{
 				"command": "Bugout.addEntry",
-				"title": "Add"
+				"title": "Create entry"
 			},
 			{
 				"command": "Bugout.editEntry",
@@ -101,6 +91,8 @@
 		"@types/mocha": "^8.0.0",
 		"@types/node": "^12.11.7",
 		"@types/vscode": "^1.51.0",
+		"@types/handlebars": "^4.1.0",
+		"@types/showdown": "^1.9.3",
 		"@typescript-eslint/eslint-plugin": "^4.1.1",
 		"@typescript-eslint/parser": "^4.1.1",
 		"axios": "^0.21.0",
@@ -115,5 +107,11 @@
 		"vscode-test": "^1.4.0",
 		"webpack": "^4.44.1",
 		"webpack-cli": "^3.3.12"
+	},
+	"dependencies": {
+		"@types/handlebars": "^4.1.0",
+		"@types/showdown": "^1.9.3",
+		"handlebars": "^4.7.6",
+		"showdown": "^1.9.1"
 	}
 }
