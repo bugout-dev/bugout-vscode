@@ -1,13 +1,14 @@
 import * as vscode from 'vscode';
-import * as axios from 'axios';
+//import { a } from 'axios';
+import axios, { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import fetch, {Response,Request} from 'node-fetch';
 import { showInputBox } from './search';
 import { admonitions } from 'remark-admonitions';
-import * as html from 'remark-html';
-import * as remark from 'remark';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as showdown from 'showdown';
 import * as handlebars from 'handlebars';
+
 
 const editor = vscode.window.activeTextEditor;
 //import {Entry} from './datatype';
@@ -21,9 +22,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     //Create your objects - Needs to be a well-formed JSON object.
 	let bugoutWebView: vscode.WebviewPanel | undefined = undefined;
+	let resp = await axios.get("https://spire.bugout.dev/ping");
+	console.log(resp);
 
 	// Samples of `window.registerSpireDataProvider`
 	const Provider = new BugOut(vscode.workspace.rootPath);
+	
+	const fetresp = await( await fetch("https://spire.bugout.dev/ping")).text();
+	console.log(fetresp);
 	// vscode.window.registerTreeDataProvider('Bugout.getJournals', nodeDependenciesProvider);
 	console.log('init start');
 	//let journals = await Provider.getJournalsTreeView()
@@ -36,8 +42,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
 function getBugoutConfig() {
 	const configuration = vscode.workspace.getConfiguration();
-	const api = configuration.get<string>('BugOut.Api.endpoint');
-	const token = configuration.get<string>('BugOut.AccessToken');
+	const api = configuration.get<string>('Bugout.Api.endpoint');
+	const token = configuration.get<string>('Bugout.AccessToken');
 
 	return [api, token];
 }
@@ -72,8 +78,12 @@ async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode
 	const token = config[1];
 
 	let params = { headers : {"Authorization": `Bearer ${token}`}};
-	const result  = await axios.default.get(`${api}/journals`,params);
+	console.log(api);
+	//await( await fetch("https://spire.bugout.dev/ping")).text();
+	const result  = await axios.get(`${api}/journals`,params);
 	const journals = result.data.journals;
+	// const journals = await( await fetch(`${api}/journals`,params)).text();
+	// console.log(journals);
 	let journals_options: any = [];
 	for (var jornal of journals) {
 		journals_options.push({label: jornal.name , picked: false, id: jornal.id});
@@ -213,8 +223,9 @@ class searchResultsProvider {
 
 				case 'search':
 					if (panel != undefined) {
-						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, message.journal, message.text);
+						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, context.extensionUri, message.journal, message.query);
 					}
+					break;
 
 				case 'createNewEntry':
 
@@ -227,6 +238,8 @@ class searchResultsProvider {
 							"Authorization": `Bearer ${token}`,
 						}
 					  };
+					
+					console.log(message);
 			
 					let payload  = {
 						"title": entry.title,
@@ -237,12 +250,13 @@ class searchResultsProvider {
 						"context_type": "vscode",
 					}
 					console.log(payload);
-					await axios.default.post(`${api}/journals/d6c9fbf3-e4c0-4d1a-8129-e9e6768d1054/entries`, payload, options); ///.then(function (response) {return response.data})
-					
+					await axios.post(`${api}/journals/${message.journal_id}/entries`, payload, options); ///.then(function (response) {return response.data})
+					axios.create()
 
 					if (panel != undefined) {
-						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview,  context.extensionPath, extensionUri, '');
+						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview,  context.extensionPath, context.extensionUri, message.journal_id, '');
 					}
+					break;
 			  }
 			},
 			undefined,
@@ -273,9 +287,10 @@ class searchResultsProvider {
 			"Authorization": `Bearer ${token}`,
 		}}
 		console.log(`${api}/journals/${journal}/search?q=${query}`);
-		const result  = await axios.default.get(`${api}/journals/${journal}/search?q=${query}`,params) ///.then(function (response) {return response.data})
+		const result  = await axios.get(`${api}/journals/${journal}/search?q=${query}`,params) ///.then(function (response) {return response.data})
 		let data = result.data.results;
-
+		const request_journals  = await axios.get(`${api}/journals`,params);
+		const journals = request_journals.data.journals;
 		// Get resource paths
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'media', 'styles.css'));
 		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.css'));
@@ -311,12 +326,13 @@ class searchResultsProvider {
 			search_html_block: search_html_block,
 			query: query,
 			journal: journal,
+			journals : journals
 		}
 
-		const bars_template = fs.readFileSync(path.join(extensionPath,'src/views/search.html'), 'utf-8');
-		console.log(bars_template);
+		const bars_template = fs.readFileSync(path.join(extensionPath,'views/search.html'), 'utf-8');
+		//console.log(bars_template);
 		const template = handlebars.compile(bars_template);
-		console.log(template(prerender_data));
+		//console.log(template(prerender_data));
 		return template(prerender_data);
 	}
 
@@ -327,14 +343,20 @@ class searchResultsProvider {
 		const config = getBugoutConfig();
 		const api = config[0];
 		const token = config[1];
-
-
+		
 		let params = { headers : {
 			"x-bugout-client-id": "slack-some-track",
 			"Authorization": `Bearer ${token}`,
 		}};
-		const result  = await axios.default.get(`${api}/journals/d6c9fbf3-e4c0-4d1a-8129-e9e6768d1054/tags`,params); ///.then(function (response) {return response.data})
+
+		const request_journals  = await axios.get(`${api}/journals`,params);
+		const journals = request_journals.data.journals;
+		
+
+		const result  = await axios.get(`${api}/journals/${journals[0].id}/tags`,params); ///.then(function (response) {return response.data})
 		let tags = result.data;
+
+		
 		console.log(tags);
 		var tags_option: any[] = [];
 
@@ -351,10 +373,11 @@ class searchResultsProvider {
 
 		let data = {
 			content: content,
-			tags_option: JSON.stringify(tags_option)
+			tags_option: JSON.stringify(tags_option),
+			journals: journals
 		}
 
-		const bars_template = fs.readFileSync(path.join(extentionPath,'src/views/createEntry.html'), 'utf-8');
+		const bars_template = fs.readFileSync(path.join(extentionPath,'views/createEntry.html'), 'utf-8');
 		//console.log(bars_template);
 		const template = handlebars.compile(bars_template);
 		//console.log(template(data));

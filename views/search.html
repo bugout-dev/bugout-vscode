@@ -33,8 +33,10 @@
 <div id="query" data= "{{{ query }}}"></div>
 
 <div id="icons">
+
     <input type="search" id="search" name="q"
     aria-label="Search through site content">
+    
     <script>
         const vscode = acquireVsCodeApi();
         function useAdvise() {
@@ -52,8 +54,15 @@
      -->
     <button onclick="useAdvise()">Search</button>
 
-
+     <div>
+        <select name="journals" id="journals">
+            {{#each journals}}
+                <option value="{{ id }}">{{name}}</option>>
+            {{/each}}
+        </select>
+    </div>
         <div>{{{ search_html_block }}}</div>
     </div>
+
 </body>
 </html>

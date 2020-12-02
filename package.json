@@ -2,6 +2,7 @@
 	"name": "spire-vscode",
 	"displayName": "spire_vscode",
 	"description": "",
+	"publisher": "test",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.51.0"
@@ -17,13 +18,15 @@
 		"configuration": {
 			"title": "BugOut",
 			"properties": {
-				"BugOut.AccessToken": {
+				"Bugout.AccessToken": {
 					"type": "string",
+					"scope": "window",
 					"markdownDescription": "Put your bugout access token. Can find in your [Bugout account](https://alpha.bugout.dev/) page."
 				},
-				"BugOut.Api.endpoint": {
+				"Bugout.Api.endpoint": {
 					"type": "string",
 					"default": "https://spire.bugout.dev",
+					"scope": "window",
 					"markdownDescription": "Bugout api url for access to journal."
 				}
 			}
@@ -95,6 +98,7 @@
 		"@types/showdown": "^1.9.3",
 		"@typescript-eslint/eslint-plugin": "^4.1.1",
 		"@typescript-eslint/parser": "^4.1.1",
+		"node-fetch": "2.6.1",
 		"axios": "^0.21.0",
 		"eslint": "^7.9.0",
 		"glob": "^7.1.6",
@@ -110,6 +114,7 @@
 	},
 	"dependencies": {
 		"@types/handlebars": "^4.1.0",
+		"@types/node-fetch": "^2.5.7",
 		"@types/showdown": "^1.9.3",
 		"handlebars": "^4.7.6",
 		"showdown": "^1.9.1"

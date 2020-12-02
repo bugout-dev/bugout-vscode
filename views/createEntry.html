@@ -71,6 +71,12 @@
         border-radius: 2%;
         }
     </style>
+    <select name="journals" id="journals">
+        {{#each journals}}
+            <option value="{{ id }}">{{name}}</option>>
+        {{/each}}
+    </select>
+
     <h4> Title </h4>
     <div class="bg">
         
@@ -917,10 +923,12 @@
     <script>
         //const vscode = acquireVsCodeApi();
         function createEntry() {
+            let e = document.getElementById("journals");
+            let journal = e.value;
             let title = document.querySelector("#title").value;
             let content = document.querySelector("#content").value;
             let tags = document.querySelector("#tags").value;
-            vscode.postMessage({command: 'createNewEntry', entry: {'title': title, 'content': content, 'tags': tags}})
+            vscode.postMessage({command: 'createNewEntry', journal_id: journal, entry: {'title': title, 'content': content, 'tags': tags}})
         }
     </script>
     <button type="button" class="btn btn-primary btn-lg pull-right submit_button" onclick="createEntry()">Submit</button>
