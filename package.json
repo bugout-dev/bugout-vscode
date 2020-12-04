@@ -49,7 +49,7 @@
 		"commands": [
 			{
 				"command": "Bugout.search",
-				"title": "BugOut: Search in team journal"
+				"title": "Bugout: Search in team journal"
 			},
 			{
 				"command": "Bugout.addEntry",
@@ -57,15 +57,15 @@
 			},
 			{
 				"command": "Bugout.editEntry",
-				"title": "BugOut: Edit entries"
+				"title": "Bugout: Edit entries"
 			},
 			{
 				"command": "Bugout.deleteEntry",
-				"title": "BugOut: Delete entry from journal"
+				"title": "Bugout: Delete entry from journal"
 			},
 			{
 				"command": "nodeDependencies.addEntry",
-				"title": "BugOut: Get journals"
+				"title": "Bugout: Get journals"
 			}
 		],
 		"views": {
@@ -117,6 +117,8 @@
 		"@types/node-fetch": "^2.5.7",
 		"@types/showdown": "^1.9.3",
 		"handlebars": "^4.7.6",
-		"showdown": "^1.9.1"
+		"highlight.js": "^10.4.1",
+		"showdown": "^1.9.1",
+		"showdown-highlight": "^2.1.5"
 	}
 }

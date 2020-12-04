@@ -8,12 +8,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as showdown from 'showdown';
 import * as handlebars from 'handlebars';
-
-
+//import * as showdownHighlight from 'showdown-highlight';
+//import showdownHighlight from 'showdown-highlight';
 const editor = vscode.window.activeTextEditor;
 //import {Entry} from './datatype';
 
 import { BugOut} from './spireApi';
+import { title } from 'process';
 
 // Intresting can i extract datatypes using protobuff???
 
@@ -141,7 +142,7 @@ class searchResultsProvider {
 			panel.webview.options = {
 				enableScripts: true,
 				enableCommandUris: true,
-				localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'media'))] 
+				localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))] 
 			};
 		}
 		
@@ -188,6 +189,10 @@ class searchResultsProvider {
 
 		var selection = editor.selection;
 		var text = editor.document.getText(selection);
+		const ext = editor.document.fileName.split('.').pop();
+		if (ext == 'py') {
+			text = '```python\n' + text + '\n```'
+		}
 
 		if (panel == undefined){
 
@@ -266,7 +271,7 @@ class searchResultsProvider {
 
 
 	}	
-
+	
 	private static async _getSearchHtmlForWebview(webview: vscode.Webview, extensionPath: string, extensionUri: vscode.Uri, journal: string, query?: string, formating_off?: boolean) {
 
 		
@@ -279,7 +284,8 @@ class searchResultsProvider {
 			simplifiedAutoLink: true,
 			strikethrough: true,
 			tasklists: true,
-			ghCodeBlocks: true,
+			ghCodeBlocks: true
+			//extensions:[showdownHighlight],
 		    });
 
 		let params = { headers : {
@@ -289,14 +295,14 @@ class searchResultsProvider {
 		console.log(`${api}/journals/${journal}/search?q=${query}`);
 		const result  = await axios.get(`${api}/journals/${journal}/search?q=${query}`,params) ///.then(function (response) {return response.data})
 		let data = result.data.results;
-		const request_journals  = await axios.get(`${api}/journals`,params);
+		const request_journals  = await axios.get(`${api}/journals/`,params);
 		const journals = request_journals.data.journals;
 		// Get resource paths
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'media', 'styles.css'));
 		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.css'));
 		const codiconsFontUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.ttf'));
 		
-		let templateContent = '<div><div>title</div><div>tags</div><div style="background-color:  rgba(170, 170, 170, 0.1); border-radius: 2%;">content</div></div>';
+		let templateContent = '<div><div>title</div><div>tags</div><div >content</div></div>';
 
 
 		let search_html_block = '';
@@ -312,13 +318,13 @@ class searchResultsProvider {
 
 			}else{
 				///console.log(entry.content);
-				entry_represend = entry_represend.replace('title', md.makeHtml('### ' + entry.title + '\n'));
-				entry_represend = entry_represend.replace('tags', md.makeHtml('`' + entry.tags.join('` `') + '`'));
+				entry_represend = entry_represend.replace('title', md.makeHtml('## ' + entry.title + '\n'));
+				entry_represend = entry_represend.replace('tags', md.makeHtml('**Tags:** ' + '`' +  entry.tags.join('` | `') + '`'));
 				entry_represend = entry_represend.replace('content', md.makeHtml(entry.content));
 
 			}
 
-			search_html_block = search_html_block + '<hr class="solid">' + entry_represend
+			search_html_block = search_html_block + '<br><hr class="solid">' + entry_represend
 			// Use `key` and `value`
 		}
 
@@ -337,8 +343,6 @@ class searchResultsProvider {
 	}
 
 	private static async _getEditEntryHtmlForWebview(webview: vscode.Webview, extentionPath: string, content: string) {
-		//console.log(this._extensionUri, 'media', 'fastselect.js');
-
 
 		const config = getBugoutConfig();
 		const api = config[0];
@@ -349,7 +353,7 @@ class searchResultsProvider {
 			"Authorization": `Bearer ${token}`,
 		}};
 
-		const request_journals  = await axios.get(`${api}/journals`,params);
+		const request_journals  = await axios.get(`${api}/journals/`,params);
 		const journals = request_journals.data.journals;
 		
 
@@ -364,14 +368,14 @@ class searchResultsProvider {
 			tags_option.push({"text": tag[0], "value":tag[0]})
 		}
 		console.log(JSON.stringify(tags_option));
-		const scriptPathOnDisk = vscode.Uri.file(path.join(extentionPath, 'src/media', 'fastselect.js'));
-		const styleFastSelectPath = vscode.Uri.file(path.join(extentionPath, 'src/media', 'fastselect.css'));
-		console.log(scriptPathOnDisk);
-		console.log(styleFastSelectPath);
-		const styleSrc = webview.asWebviewUri(scriptPathOnDisk);
-		const scriptSrc = webview.asWebviewUri(scriptPathOnDisk);
+		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extentionPath, 'media', 'jquery2.1.min.js')));
+		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extentionPath, 'media', 'fastsearch.min.js')));	
+		const fastselect_css_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extentionPath, 'media', 'fastselect.scss')));
 
 		let data = {
+			fastsearch_js_uri:fastsearch_js_uri,
+			jquery_js_uri:jquery_js_uri,
+			fastselect_css_uri:fastselect_css_uri,
 			content: content,
 			tags_option: JSON.stringify(tags_option),
 			journals: journals
