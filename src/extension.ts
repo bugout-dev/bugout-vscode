@@ -12,7 +12,7 @@ import * as handlebars from 'handlebars';
 //import showdownHighlight from 'showdown-highlight';
 const editor = vscode.window.activeTextEditor;
 //import {Entry} from './datatype';
-
+import * as highlight from 'highlight.js';
 import { BugOut} from './spireApi';
 import { title } from 'process';
 
@@ -279,13 +279,33 @@ class searchResultsProvider {
 		const api = config[0];
 		const token = config[1];
 
+		showdown.extension('highlight', function () {
+			return [{
+			  type: "output",
+			  filter: function (text, converter, options) {
+			  var left = "<pre><code\\b[^>]*>",
+				  right = "</code></pre>",
+				  flags = "g";
+			  var replacement = function (wholeMatch, match, left, right) {
+				  var lang = (left.match(/class=\"([^ \"]+)/) || [])[1];
+				left = left.slice(0, 18) + 'hljs ' + left.slice(18);
+				if (lang && highlight.getLanguage(lang)) {
+					return left + highlight.highlight(lang, match).value + right;
+						} else {
+							return left + highlight.highlightAuto(match).value + right;
+						}
+					};
+			  return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
+			}
+		  }];
+		});
 
 		let md = new showdown.Converter({tables: true,
 			simplifiedAutoLink: true,
 			strikethrough: true,
 			tasklists: true,
-			ghCodeBlocks: true
-			//extensions:[showdownHighlight],
+			ghCodeBlocks: true,
+			extensions:['highlight'],
 		    });
 
 		let params = { headers : {
@@ -298,7 +318,8 @@ class searchResultsProvider {
 		const request_journals  = await axios.get(`${api}/journals/`,params);
 		const journals = request_journals.data.journals;
 		// Get resource paths
-		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'src', 'media', 'styles.css'));
+		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'jquery2.1.min.js')));
+		const highlightstyleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'vs.css'));
 		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.css'));
 		const codiconsFontUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.ttf'));
 		
@@ -329,6 +350,7 @@ class searchResultsProvider {
 		}
 
 		let prerender_data = {
+			vscodehighlight: highlightstyleUri,
 			search_html_block: search_html_block,
 			query: query,
 			journal: journal,
@@ -342,7 +364,7 @@ class searchResultsProvider {
 		return template(prerender_data);
 	}
 
-	private static async _getEditEntryHtmlForWebview(webview: vscode.Webview, extentionPath: string, content: string) {
+	private static async _getEditEntryHtmlForWebview(webview: vscode.Webview, extensionPath: string, content: string) {
 
 		const config = getBugoutConfig();
 		const api = config[0];
@@ -368,9 +390,9 @@ class searchResultsProvider {
 			tags_option.push({"text": tag[0], "value":tag[0]})
 		}
 		console.log(JSON.stringify(tags_option));
-		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extentionPath, 'media', 'jquery2.1.min.js')));
-		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extentionPath, 'media', 'fastsearch.min.js')));	
-		const fastselect_css_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extentionPath, 'media', 'fastselect.scss')));
+		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'jquery2.1.min.js')));
+		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastsearch.min.js')));	
+		const fastselect_css_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect.scss')));
 
 		let data = {
 			fastsearch_js_uri:fastsearch_js_uri,
@@ -381,7 +403,7 @@ class searchResultsProvider {
 			journals: journals
 		}
 
-		const bars_template = fs.readFileSync(path.join(extentionPath,'views/createEntry.html'), 'utf-8');
+		const bars_template = fs.readFileSync(path.join(extensionPath,'views/createEntry.html'), 'utf-8');
 		//console.log(bars_template);
 		const template = handlebars.compile(bars_template);
 		//console.log(template(data));
