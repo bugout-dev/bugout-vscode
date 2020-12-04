@@ -11,6 +11,7 @@
     <title>Cat Coding</title>
     <link href="${styleUri}" rel="stylesheet" />
     <link href="${codiconsUri}" rel="stylesheet" />
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
     <style>
         hr.solid {
             border-top: 2px solid #000;
@@ -29,12 +30,15 @@
     </style>
 </head>
 <body>
+    <br>
 
 <div id="query" data= "{{{ query }}}"></div>
 
 <div id="icons">
+    <div>
     <input type="search" id="search" name="q"
-    aria-label="Search through site content">
+    aria-label="Searcht">
+    
     <script>
         const vscode = acquireVsCodeApi();
         function useAdvise() {
@@ -50,10 +54,18 @@
         }
     </script>
      -->
-    <button onclick="useAdvise()">Search</button>
+    <button onclick="useAdvise()">search<i class="fa fa-search"></i></button>
+    </div>
 
-
+     <div>
+        <select class="form-control" name="journals" id="journals">
+            {{#each journals}}
+                <option value="{{ id }}">{{name}}</option>>
+            {{/each}}
+        </select>
+    </div>
         <div>{{{ search_html_block }}}</div>
     </div>
+
 </body>
 </html>
