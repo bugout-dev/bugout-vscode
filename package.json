@@ -2,7 +2,7 @@
 	"name": "Bugout",
 	"displayName": "Bugout",
 	"description": "",
-	"publisher": "Bugout.dev",
+	"publisher": "Bugout",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.51.0"

@@ -11,7 +11,7 @@
     <title>Cat Coding</title>
     <link href="${styleUri}" rel="stylesheet" />
     <link href="${codiconsUri}" rel="stylesheet" />
-    <link href="{{ vscodehighlight }}"  rel="stylesheet" />
+    <link id ="highlightStyle" href="{{ vscodehighlight }}"  rel="stylesheet" />
     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
     <style>
         hr.solid {
@@ -58,6 +58,16 @@
                 event.preventDefault();
                 // Trigger the button element with a click
                 useAdvise();
+            }
+        });
+        window.addEventListener('message', event => {
+
+        const message = event.data; // The JSON data our extension sent
+
+            switch (message.command) {
+                case 'update':
+                    console.log(message.highlightStyle);
+                    document.getElementById('highlightStyle').href = message.highlightStyle;
             }
         });
     </script>

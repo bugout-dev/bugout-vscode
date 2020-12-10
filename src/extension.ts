@@ -8,36 +8,50 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as showdown from 'showdown';
 import * as handlebars from 'handlebars';
-//import * as showdownHighlight from 'showdown-highlight';
-//import showdownHighlight from 'showdown-highlight';
-const editor = vscode.window.activeTextEditor;
-//import {Entry} from './datatype';
 import * as highlight from 'highlight.js';
+//import * as shiki from 'shiki';
 import { BugOut} from './spireApi';
 import { title } from 'process';
+import { exception } from 'console';
+//import * as shiki from 'shiki';
 
-// Intresting can i extract datatypes using protobuff???
+vscode.window.showInformationMessage(path.resolve('./../data', `dark.json`));
+
+const editor = vscode.window.activeTextEditor;
 
 
 export async function activate(context: vscode.ExtensionContext) {
 
+	
+
     //Create your objects - Needs to be a well-formed JSON object.
 	let bugoutWebView: vscode.WebviewPanel | undefined = undefined;
-	let resp = await axios.get("https://spire.bugout.dev/ping");
-	console.log(resp);
+	// let resp = await axios.get("https://spire.bugout.dev/ping");
+	// console.log(resp);
+	// console.log(vscode.workspace.getConfiguration('workbench').get('colorTheme'));
+
+
+	let bugoutProvider = new searchResultsProvider();
+
+	console.log(vscode.window.activeTextEditor);
+	// vscode.workspace.onDidChangeConfiguration((change) => {
+    //     if (change.affectsConfiguration('workbench.colorTheme')) {
+    //         for (var tabs of editor)
+    //     }
+    // }, undefined, context.subscriptions);
 
 	// Samples of `window.registerSpireDataProvider`
-	const Provider = new BugOut(vscode.workspace.rootPath);
+	//const Provider = new BugOut(vscode.workspace.rootPath);
 	
-	const fetresp = await( await fetch("https://spire.bugout.dev/ping")).text();
-	console.log(fetresp);
+	// const fetresp = await( await fetch("https://spire.bugout.dev/ping")).text();
+	// console.log(fetresp);
 	// vscode.window.registerTreeDataProvider('Bugout.getJournals', nodeDependenciesProvider);
-	console.log('init start');
+	vscode.window.showInformationMessage('init start');
 	//let journals = await Provider.getJournalsTreeView()
 	//vscode.window.registerTreeDataProvider('journalsView', new TreeDataProvider(journals));
 	//let provider = new searchResultsProvider(context.extensionUri);
-	vscode.commands.registerCommand('Bugout.search', ()  => { searchInput(context, context.extensionUri,bugoutWebView);});
-	vscode.commands.registerCommand('Bugout.addEntry', (entry: Entry) => {editEntry(context, context.extensionUri, bugoutWebView);});
+	vscode.commands.registerCommand('Bugout.search', ()  => { searchInput(context, context.extensionUri,bugoutWebView, bugoutProvider);});
+	vscode.commands.registerCommand('Bugout.addEntry', () => { editEntry(context, context.extensionUri, bugoutWebView, bugoutProvider );});
 }
 
 
@@ -48,40 +62,28 @@ function getBugoutConfig() {
 
 	return [api, token];
 }
-
-function syntaxHighlight(json: string) {
-    if (typeof json != 'string') {
-         json = JSON.stringify(json, undefined, 2);
-    }
-    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        var cls = 'number';
-        if (/^"/.test(match)) {
-            if (/:$/.test(match)) {
-                cls = 'key';
-            } else {``
-                cls = 'string';
-            }
-        } else if (/true|false/.test(match)) {
-            cls = 'boolean';
-        } else if (/null/.test(match)) {
-            cls = 'null';
+function getLanguageId(inId: string) {
+    for (const language of languages) {
+        if (inId === language.name || language.identifiers.some(langId => inId === langId)) {
+            return language.language;
         }
-        return '<span class="' + cls + '">' + match + '</span>';
-    });
-}
+    }
+    return undefined;
+};
 
-async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode.Uri,panel: vscode.WebviewPanel | undefined) { 
+async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode.Uri,panel: vscode.WebviewPanel | undefined, bugoutProvider) { 
 	const query = await vscode.window.showInputBox();
 
 	const config = getBugoutConfig();
 	const api = config[0];
 	const token = config[1];
-
+	console.log(config);
+	vscode.window.showInformationMessage(`api = ${api} | token = ${token}`);
 	let params = { headers : {"Authorization": `Bearer ${token}`}};
+
 	console.log(api);
 	//await( await fetch("https://spire.bugout.dev/ping")).text();
-	const result  = await axios.get(`${api}/journals`,params);
+	const result  = await axios.get(`${api}/journals/`,params);
 	const journals = result.data.journals;
 	// const journals = await( await fetch(`${api}/journals`,params)).text();
 	// console.log(journals);
@@ -96,14 +98,28 @@ async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode
 		return;
 	}
 	console.log(typeof selected_journal)
-	searchResultsProvider.getSearch(context,extensionUri, panel, selected_journal.id, query)
+	bugoutProvider.getSearch(context,extensionUri, panel, selected_journal.id, query)
 
 }
 
-async function editEntry(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined) { 
+async function editEntry(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined, bugoutProvider) { 
 
-	searchResultsProvider.generateEditEntry(context,extensionUri, panel)
+	bugoutProvider.generateEditEntry(context,extensionUri, panel)
 
+}
+
+// const defaultThemesMap = {
+// 	'Visual Studio Light': 'vscode',
+// 	'Default Light+': 'light_plus',
+// 	'Visual Studio Dark': 'dark_vs',
+// 	'Default Dark+': 'dark_plus'
+// }
+
+const defaultThemesMap = {
+	'Visual Studio Light': 'github.css',
+	'Default Light+': 'github.css',
+	'Visual Studio Dark': 'vs2015.css',
+	'Default Dark+': 'vs2015.css'
 }
 
 function getNonce() {
@@ -115,6 +131,17 @@ function getNonce() {
 	return text;
 }
 
+function getCurrentThemePath(themeName) {
+	for (const ext of vscode.extensions.all) {
+		const themes = ext.packageJSON.contributes && ext.packageJSON.contributes.themes;
+		if (!themes) continue;
+		const theme = themes.find(theme => theme.label === themeName || theme.id === themeName);
+		if (theme) {
+			return path.join(ext.extensionPath, theme.path);
+		}
+	}
+}
+
 class searchResultsProvider {
 
 	public static readonly viewType = 'Bugout-search';
@@ -122,7 +149,7 @@ class searchResultsProvider {
 
 
 
-	public static async getSearch(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined, journal: string, query?: string, tags?: Array<string>) {
+	public async getSearch(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined, journal: string, query?: string, tags?: Array<string>) {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
@@ -147,6 +174,28 @@ class searchResultsProvider {
 		}
 		
 		panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, journal, query);
+
+		let theme = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'vs.css'));
+		
+		// 
+		vscode.workspace.onDidChangeConfiguration(() => {
+	
+			if (!panel || panel == undefined) {
+				return;
+			}
+
+			//vscode-webview-resource://2dcea161-ba74-4cc9-9c23-dc533fd19767/file///c%3A/Users/Andrey/vscode-extension-samples-master/Vs-code-integration/media/github.css
+
+			let currentThemeName = vscode.workspace.getConfiguration('workbench').get('colorTheme');
+			if (typeof currentThemeName === 'string' ) {
+				if (defaultThemesMap[currentThemeName]) {
+					theme = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', defaultThemesMap[currentThemeName]));
+				}
+			}	
+			// Send a message to our webview.
+			// You can send any JSON serializable data.
+			panel.webview.postMessage({ command: 'update' , highlightStyle:`${theme.scheme}://${theme.authority}${theme.path}`});
+		});
 
 		panel.webview.onDidReceiveMessage(
 			async message => {
@@ -173,7 +222,7 @@ class searchResultsProvider {
 	}
 
 
-	public static async generateEditEntry(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined) {
+	public async generateEditEntry(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined) {
 
 
 
@@ -190,6 +239,7 @@ class searchResultsProvider {
 		var selection = editor.selection;
 		var text = editor.document.getText(selection);
 		const ext = editor.document.fileName.split('.').pop();
+		
 		if (ext == 'py') {
 			text = '```python\n' + text + '\n```'
 		}
@@ -266,13 +316,12 @@ class searchResultsProvider {
 			},
 			undefined,
 			context.subscriptions
-		  );
-		
+		  );		
 
 
 	}	
 	
-	private static async _getSearchHtmlForWebview(webview: vscode.Webview, extensionPath: string, extensionUri: vscode.Uri, journal: string, query?: string, formating_off?: boolean) {
+	private async _getSearchHtmlForWebview(webview: vscode.Webview, extensionPath: string, extensionUri: vscode.Uri, journal: string, query?: string, formating_off?: boolean) {
 
 		
 		const config = getBugoutConfig();
@@ -287,19 +336,59 @@ class searchResultsProvider {
 				  right = "</code></pre>",
 				  flags = "g";
 			  var replacement = function (wholeMatch, match, left, right) {
-				  var lang = (left.match(/class=\"([^ \"]+)/) || [])[1];
-				left = left.slice(0, 18) + 'hljs ' + left.slice(18);
-				if (lang && highlight.getLanguage(lang)) {
-					return left + highlight.highlight(lang, match).value + right;
-						} else {
-							return left + highlight.highlightAuto(match).value + right;
-						}
-					};
+				  	var lang = (left.match(/class=\"([^ \"]+)/) || [])[1];
+					left = left.slice(0, 18) + 'hljs ' + left.slice(18);
+
+					if (lang && highlight.getLanguage(lang)) {
+						return left + highlight.highlight(lang, match).value + right;
+							} else {
+								return left + highlight.highlightAuto(match).value + right;
+							}
+
+					
+					
+					// let theme;
+
+					// if ( typeof currentThemeName === 'string') {
+					// 	if (defaultThemesMap[currentThemeName]) {
+					// 		theme = defaultThemesMap[currentThemeName];
+					// 	} else {
+					// 		const colorThemePath = getCurrentThemePath(currentThemeName);
+					// 		console.log('load');
+					// 		if (colorThemePath) {
+					// 			theme = shiki.loadTheme(colorThemePath);
+					// 			theme.name = 'random';// Shiki doesn't work without name and defaults to `Nord`
+					// 		}
+					// 	}
+					// }
+					// theme = shiki.getTheme(theme);
+
+					// let languageId = getLanguageId(lang);
+
+					// //const highlighter = shiki.getHighlighter({ theme });
+					// if (typeof languageId === 'string') {
+					// 	shiki.getHighlighter({ theme }).then(highlighter => {
+					// 		if( typeof highlighter != 'undefined' && highlighter.codeToHtml && languageId) {
+					// 			if (theme ) {
+					// 				return left + highlighter.codeToHtml(match, languageId) + right;
+					// 			} else {
+					// 				return left + highlighter.codeToHtml(match, languageId) + right;
+					// 			}
+					// 		}
+					// 	})
+					// } else {
+					// 	return left + match + right;
+
+					// }
+					
+											
+
+				};
 			  return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
-			}
+			}	
 		  }];
 		});
-
+		
 		let md = new showdown.Converter({tables: true,
 			simplifiedAutoLink: true,
 			strikethrough: true,
@@ -318,8 +407,17 @@ class searchResultsProvider {
 		const request_journals  = await axios.get(`${api}/journals/`,params);
 		const journals = request_journals.data.journals;
 		// Get resource paths
+
+		let theme = 'vs.css';
+		const currentThemeName = vscode.workspace.getConfiguration('workbench').get('colorTheme');
+		if (typeof currentThemeName === 'string' ) {
+			if (defaultThemesMap[currentThemeName]) {
+				theme = defaultThemesMap[currentThemeName];
+			}
+		}
+
 		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'jquery2.1.min.js')));
-		const highlightstyleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'vs.css'));
+		const highlightstyleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', theme));
 		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.css'));
 		const codiconsFontUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.ttf'));
 		
@@ -348,6 +446,7 @@ class searchResultsProvider {
 			search_html_block = search_html_block + '<br><hr class="solid">' + entry_represend
 			// Use `key` and `value`
 		}
+		console.log(highlightstyleUri);
 
 		let prerender_data = {
 			vscodehighlight: highlightstyleUri,
@@ -364,7 +463,7 @@ class searchResultsProvider {
 		return template(prerender_data);
 	}
 
-	private static async _getEditEntryHtmlForWebview(webview: vscode.Webview, extensionPath: string, content: string) {
+	private async _getEditEntryHtmlForWebview(webview: vscode.Webview, extensionPath: string, content: string) {
 
 		const config = getBugoutConfig();
 		const api = config[0];
@@ -410,3 +509,61 @@ class searchResultsProvider {
 		return template(data);
 	}
 }
+
+// Taken from https://github.com/Microsoft/vscode-markdown-tm-grammar/blob/master/build.js
+const languages = [
+    { name: 'css', language: 'css', identifiers: ['css', 'css.erb'], source: 'source.css' },
+    { name: 'basic', language: 'html', identifiers: ['html', 'htm', 'shtml', 'xhtml', 'inc', 'tmpl', 'tpl'], source: 'text.html.basic' },
+    { name: 'ini', language: 'ini', identifiers: ['ini', 'conf'], source: 'source.ini' },
+    { name: 'java', language: 'java', identifiers: ['java', 'bsh'], source: 'source.java' },
+    { name: 'lua', language: 'lua', identifiers: ['lua'], source: 'source.lua' },
+    { name: 'makefile', language: 'makefile', identifiers: ['Makefile', 'makefile', 'GNUmakefile', 'OCamlMakefile'], source: 'source.makefile' },
+    { name: 'perl', language: 'perl', identifiers: ['perl', 'pl', 'pm', 'pod', 't', 'PL', 'psgi', 'vcl'], source: 'source.perl' },
+    { name: 'r', language: 'r', identifiers: ['R', 'r', 's', 'S', 'Rprofile'], source: 'source.r' },
+    { name: 'ruby', language: 'ruby', identifiers: ['ruby', 'rb', 'rbx', 'rjs', 'Rakefile', 'rake', 'cgi', 'fcgi', 'gemspec', 'irbrc', 'Capfile', 'ru', 'prawn', 'Cheffile', 'Gemfile', 'Guardfile', 'Hobofile', 'Vagrantfile', 'Appraisals', 'Rantfile', 'Berksfile', 'Berksfile.lock', 'Thorfile', 'Puppetfile'], source: 'source.ruby' },
+    // 	Left to its own devices, the PHP grammar will match HTML as a combination of operators
+    // and constants. Therefore, HTML must take precedence over PHP in order to get proper
+    // syntax highlighting.
+    { name: 'php', language: 'php', identifiers: ['php', 'php3', 'php4', 'php5', 'phpt', 'phtml', 'aw', 'ctp'], source: ['text.html.basic', 'source.php'] },
+    { name: 'sql', language: 'sql', identifiers: ['sql', 'ddl', 'dml'], source: 'source.sql' },
+    { name: 'vs_net', language: 'vs_net', identifiers: ['vb'], source: 'source.asp.vb.net' },
+    { name: 'xml', language: 'xml', identifiers: ['xml', 'xsd', 'tld', 'jsp', 'pt', 'cpt', 'dtml', 'rss', 'opml'], source: 'text.xml' },
+    { name: 'xsl', language: 'xsl', identifiers: ['xsl', 'xslt'], source: 'text.xml.xsl' },
+    { name: 'yaml', language: 'yaml', identifiers: ['yaml', 'yml'], source: 'source.yaml' },
+    { name: 'dosbatch', language: 'dosbatch', identifiers: ['bat', 'batch'], source: 'source.batchfile' },
+    { name: 'clojure', language: 'clojure', identifiers: ['clj', 'cljs', 'clojure'], source: 'source.clojure' },
+    { name: 'coffee', language: 'coffee', identifiers: ['coffee', 'Cakefile', 'coffee.erb'], source: 'source.coffee' },
+    { name: 'c', language: 'c', identifiers: ['c', 'h'], source: 'source.c' },
+    { name: 'cpp', language: 'cpp', identifiers: ['cpp', 'c\\+\\+', 'cxx'], source: 'source.cpp' },
+    { name: 'diff', language: 'diff', identifiers: ['patch', 'diff', 'rej'], source: 'source.diff' },
+    { name: 'dockerfile', language: 'dockerfile', identifiers: ['dockerfile', 'Dockerfile'], source: 'source.dockerfile' },
+    { name: 'git_commit', identifiers: ['COMMIT_EDITMSG', 'MERGE_MSG'], source: 'text.git-commit' },
+    { name: 'git_rebase', identifiers: ['git-rebase-todo'], source: 'text.git-rebase' },
+    { name: 'go', language: 'go', identifiers: ['go', 'golang'], source: 'source.go' },
+    { name: 'groovy', language: 'groovy', identifiers: ['groovy', 'gvy'], source: 'source.groovy' },
+    { name: 'pug', language: 'pug', identifiers: ['jade', 'pug'], source: 'text.pug' },
+
+    { name: 'js', language: 'javascript', identifiers: ['js', 'jsx', 'javascript', 'es6', 'mjs'], source: 'source.js' },
+    { name: 'js_regexp', identifiers: ['regexp'], source: 'source.js.regexp' },
+    { name: 'json', language: 'json', identifiers: ['json', 'json5', 'sublime-settings', 'sublime-menu', 'sublime-keymap', 'sublime-mousemap', 'sublime-theme', 'sublime-build', 'sublime-project', 'sublime-completions'], source: 'source.json' },
+    { name: 'jsonc', language: 'jsonc', identifiers: ['jsonc'], source: 'source.json.comments' },
+    { name: 'less', language: 'less', identifiers: ['less'], source: 'source.css.less' },
+    { name: 'objc', language: 'objc', identifiers: ['objectivec', 'objective-c', 'mm', 'objc', 'obj-c', 'm', 'h'], source: 'source.objc' },
+    { name: 'swift', language: 'swift', identifiers: ['swift'], source: 'source.swift' },
+    { name: 'scss', language: 'scss', identifiers: ['scss'], source: 'source.css.scss' },
+
+    { name: 'perl6', language: 'perl6', identifiers: ['perl6', 'p6', 'pl6', 'pm6', 'nqp'], source: 'source.perl.6' },
+    { name: 'powershell', language: 'powershell', identifiers: ['powershell', 'ps1', 'psm1', 'psd1'], source: 'source.powershell' },
+    { name: 'python', language: 'python', identifiers: ['python', 'py', 'py3', 'rpy', 'pyw', 'cpy', 'SConstruct', 'Sconstruct', 'sconstruct', 'SConscript', 'gyp', 'gypi'], source: 'source.python' },
+    { name: 'regexp_python', identifiers: ['re'], source: 'source.regexp.python' },
+    { name: 'rust', language: 'rust', identifiers: ['rust', 'rs'], source: 'source.rust' },
+    { name: 'scala', language: 'scala', identifiers: ['scala', 'sbt'], source: 'source.scala' },
+    { name: 'shell', language: 'shellscript', identifiers: ['shell', 'sh', 'bash', 'zsh', 'bashrc', 'bash_profile', 'bash_login', 'profile', 'bash_logout', '.textmate_init'], source: 'source.shell' },
+    { name: 'ts', language: 'typescript', identifiers: ['typescript', 'ts'], source: 'source.ts' },
+    { name: 'tsx', language: 'typescriptreact', identifiers: ['tsx'], source: 'source.tsx' },
+    { name: 'csharp', language: 'csharp', identifiers: ['cs', 'csharp', 'c#'], source: 'source.cs' },
+    { name: 'fsharp', language: 'fsharp', identifiers: ['fs', 'fsharp', 'f#'], source: 'source.fsharp' },
+    { name: 'dart', language: 'dart', identifiers: ['dart'], source: 'source.dart' },
+    { name: 'handlebars', language: 'handlebars', identifiers: ['handlebars', 'hbs'], source: 'text.html.handlebars' },
+    { name: 'markdown', language: 'markdown', identifiers: ['markdown', 'md'], source: 'text.html.markdown' },
+];
