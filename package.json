@@ -1,8 +1,8 @@
 {
-	"name": "spire-vscode",
-	"displayName": "spire_vscode",
+	"name": "Bugout",
+	"displayName": "Bugout",
 	"description": "",
-	"publisher": "test",
+	"publisher": "Bugout",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.51.0"
@@ -98,6 +98,7 @@
 		"@types/showdown": "^1.9.3",
 		"@typescript-eslint/eslint-plugin": "^4.1.1",
 		"@typescript-eslint/parser": "^4.1.1",
+		"@types/highlight.js": "9.12.2",
 		"node-fetch": "2.6.1",
 		"axios": "^0.21.0",
 		"eslint": "^7.9.0",

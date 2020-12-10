@@ -11,6 +11,7 @@
     <title>Cat Coding</title>
     <link href="${styleUri}" rel="stylesheet" />
     <link href="${codiconsUri}" rel="stylesheet" />
+    <link id ="highlightStyle" href="{{ vscodehighlight }}"  rel="stylesheet" />
     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
     <style>
         hr.solid {
@@ -25,7 +26,10 @@
         
         input,
         label {
+            width: 100%;
             margin: .4rem 0;
+            border-radius: 3px;
+            padding: 5px;
         }
     </style>
 </head>
@@ -40,11 +44,32 @@
     aria-label="Searcht">
     
     <script>
+
         const vscode = acquireVsCodeApi();
         function useAdvise() {
             let text_ = document.querySelector("#search").value;
             vscode.postMessage({command: 'search', query: text_, journal: "{{ journal }}" })
         }
+        let input = document.querySelector("#search");
+        input.addEventListener("keyup", function(event) {
+                // Number 13 is the "Enter" key on the keyboard
+                if (event.keyCode === 13) {
+                // Cancel the default action, if needed
+                event.preventDefault();
+                // Trigger the button element with a click
+                useAdvise();
+            }
+        });
+        window.addEventListener('message', event => {
+
+        const message = event.data; // The JSON data our extension sent
+
+            switch (message.command) {
+                case 'update':
+                    console.log(message.highlightStyle);
+                    document.getElementById('highlightStyle').href = message.highlightStyle;
+            }
+        });
     </script>
     <!-- <button id="mrkdown">F</button>
     <script>
@@ -54,7 +79,7 @@
         }
     </script>
      -->
-    <button onclick="useAdvise()">search<i class="fa fa-search"></i></button>
+    <!-- <button  onclick="useAdvise()">search<i class="fa fa-search"></i></button> -->
     </div>
 
      <div>
