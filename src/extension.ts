@@ -15,7 +15,6 @@ import { title } from 'process';
 import { exception } from 'console';
 //import * as shiki from 'shiki';
 
-vscode.window.showInformationMessage(path.resolve('./../data', `dark.json`));
 
 const editor = vscode.window.activeTextEditor;
 
@@ -46,7 +45,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	// const fetresp = await( await fetch("https://spire.bugout.dev/ping")).text();
 	// console.log(fetresp);
 	// vscode.window.registerTreeDataProvider('Bugout.getJournals', nodeDependenciesProvider);
-	vscode.window.showInformationMessage('init start');
 	//let journals = await Provider.getJournalsTreeView()
 	//vscode.window.registerTreeDataProvider('journalsView', new TreeDataProvider(journals));
 	//let provider = new searchResultsProvider(context.extensionUri);
@@ -77,11 +75,9 @@ async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode
 	const config = getBugoutConfig();
 	const api = config[0];
 	const token = config[1];
-	console.log(config);
-	vscode.window.showInformationMessage(`api = ${api} | token = ${token}`);
+
 	let params = { headers : {"Authorization": `Bearer ${token}`}};
 
-	console.log(api);
 	//await( await fetch("https://spire.bugout.dev/ping")).text();
 	const result  = await axios.get(`${api}/journals/`,params);
 	const journals = result.data.journals;
@@ -311,6 +307,7 @@ class searchResultsProvider {
 					if (panel != undefined) {
 						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview,  context.extensionPath, context.extensionUri, message.journal_id, '');
 					}
+					vscode.window.showInformationMessage('A new entry was created in your journal.');
 					break;
 			  }
 			},
