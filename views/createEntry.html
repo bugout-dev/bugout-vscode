@@ -31,6 +31,7 @@
         appearance: none;
         font-size: 1em;
         height: 2.5rem;
+        padding: 5px;
         border-radius: 0.5rem;
         border-width: 0px;
         border-style: initial;
@@ -40,6 +41,31 @@
         line-height: 1.0;
         resize: none;
     }
+    .select-journal {
+            -webkit-appearance: button;
+            -moz-appearance: button;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -webkit-padding-end: 20px;
+            -moz-padding-end: 20px;
+            -webkit-padding-start: 2px;
+            -moz-padding-start: 2px;
+            background-position: center right;
+            background-repeat: no-repeat;
+            border-radius: 2px;
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: inherit;
+            border-width: 2px;
+            border-color: -internal-light-dark-color(rgb(118, 118, 118), rgb(195, 195, 195));
+            margin: .4rem 0;
+            border-radius: 3px;
+            padding: 5px;
+            overflow: hidden;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     .submit_button {
         background-color: #4CAF50; /* Green */
         border: none;
@@ -71,9 +97,10 @@
         max-height: 50vh;
         width: 100%;
         border-radius: 2%;
+        padding: 5px;
         }
     </style>
-    <select class="form-control" name="journals" id="journals">
+    <select class="form-control select-journal" name="journals" id="journals">
         {{#each journals}}
             <option value="{{ id }}">{{name}}</option>>
         {{/each}}
@@ -1014,10 +1041,21 @@
     
     })();</script>
     <script>
+        
+        function getSelectedOption(sel) {
+            var opt;
+            for ( var i = 0, len = sel.options.length; i < len; i++ ) {
+                opt = sel.options[i];
+                if ( opt.selected === true ) {
+                    break;
+                }
+            }
+            return opt;
+        }
         //const vscode = acquireVsCodeApi();
         function createEntry() {
             let e = document.getElementById("journals");
-            let journal = e.value;
+            let journal = getSelectedOption(e).value;
             let title = document.querySelector("#title").value;
             let content = document.querySelector("#content").value;
             let tags = document.querySelector("#tags").value;

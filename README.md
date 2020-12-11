@@ -1,5 +1,5 @@
-# Vs-code-integration
-Bugout expirience provided via vs code extetention.
+# Bugout
+Bugout  is a developer collaboration platform that integrates essential dev tools, such as GitHub, GitLab, Bitbucket, Slack, Teams, Jira, Trello and more, into VS Code. Eliminate context-switching and simplify code discussion and code review by putting collaboration tools in your IDE.
 
 # current conditions
 

@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
 //import { a } from 'axios';
 import axios, { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
-import fetch, {Response,Request} from 'node-fetch';
-import { showInputBox } from './search';
-import { admonitions } from 'remark-admonitions';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as showdown from 'showdown';
@@ -28,7 +25,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	// let resp = await axios.get("https://spire.bugout.dev/ping");
 	// console.log(resp);
 	// console.log(vscode.workspace.getConfiguration('workbench').get('colorTheme'));
-
+	// const config = getBugoutConfig();
+	// vscode.window.showInformationMessage(`endpoint = ${config[0]} | token = ${config[1]}`);
 
 	let bugoutProvider = new searchResultsProvider();
 
@@ -114,6 +112,8 @@ async function editEntry(context: vscode.ExtensionContext,extensionUri: vscode.U
 const defaultThemesMap = {
 	'Visual Studio Light': 'github.css',
 	'Default Light+': 'github.css',
+	'Quiet Light': 'github.css',
+	'Solarized Light': 'github.css',
 	'Visual Studio Dark': 'vs2015.css',
 	'Default Dark+': 'vs2015.css'
 }
@@ -183,9 +183,12 @@ class searchResultsProvider {
 			//vscode-webview-resource://2dcea161-ba74-4cc9-9c23-dc533fd19767/file///c%3A/Users/Andrey/vscode-extension-samples-master/Vs-code-integration/media/github.css
 
 			let currentThemeName = vscode.workspace.getConfiguration('workbench').get('colorTheme');
+			console.log
 			if (typeof currentThemeName === 'string' ) {
 				if (defaultThemesMap[currentThemeName]) {
 					theme = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', defaultThemesMap[currentThemeName]));
+				}else {
+					theme = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'vs2015.css'));
 				}
 			}	
 			// Send a message to our webview.
@@ -304,10 +307,13 @@ class searchResultsProvider {
 					await axios.post(`${api}/journals/${message.journal_id}/entries`, payload, options); ///.then(function (response) {return response.data})
 					axios.create()
 
-					if (panel != undefined) {
-						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview,  context.extensionPath, context.extensionUri, message.journal_id, '');
-					}
+					// if (panel != undefined) {
+					// 	panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview,  context.extensionPath, context.extensionUri, message.journal_id, '');
+					// }
 					vscode.window.showInformationMessage('A new entry was created in your journal.');
+					if (panel != undefined) {
+						panel.dispose();
+					}
 					break;
 			  }
 			},
@@ -442,6 +448,9 @@ class searchResultsProvider {
 
 			search_html_block = search_html_block + '<br><hr class="solid">' + entry_represend
 			// Use `key` and `value`
+		}
+		if (search_html_block == '') {
+			search_html_block = '<h4>No entries found</h4>';
 		}
 		console.log(highlightstyleUri);
 

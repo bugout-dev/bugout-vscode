@@ -31,14 +31,6 @@
 				}
 			}
 		},
-		"menus": {
-			"editor/title": [
-				{
-					"command": "markdown.showPreviewToSide",
-					"alt": "markdown.showPreview",
-					"group": "navigation"
-				}
-			],
 			"editor/context": [
 				{
 					"command": "Bugout.addEntry",
@@ -54,18 +46,6 @@
 			{
 				"command": "Bugout.addEntry",
 				"title": "Create entry"
-			},
-			{
-				"command": "Bugout.editEntry",
-				"title": "Bugout: Edit entries"
-			},
-			{
-				"command": "Bugout.deleteEntry",
-				"title": "Bugout: Delete entry from journal"
-			},
-			{
-				"command": "nodeDependencies.addEntry",
-				"title": "Bugout: Get journals"
 			}
 		],
 		"views": {

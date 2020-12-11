@@ -31,6 +31,31 @@
             border-radius: 3px;
             padding: 5px;
         }
+        select {
+            -webkit-appearance: button;
+            -moz-appearance: button;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -webkit-padding-end: 20px;
+            -moz-padding-end: 20px;
+            -webkit-padding-start: 2px;
+            -moz-padding-start: 2px;
+            background-position: center right;
+            background-repeat: no-repeat;
+            border-radius: 2px;
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: inherit;
+            border-width: 2px;
+            border-color: -internal-light-dark-color(rgb(118, 118, 118), rgb(195, 195, 195));
+            margin: .4rem 0;
+            border-radius: 3px;
+            padding: 5px;
+            overflow: hidden;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -41,14 +66,27 @@
 <div id="icons">
     <div>
     <input type="search" id="search" name="q"
-    aria-label="Searcht">
+    aria-label="Searcht" placeholder="Search.." value="{{{ query }}}">
     
     <script>
+
+        function getSelectedOption(sel) {
+            var opt;
+            for ( var i = 0, len = sel.options.length; i < len; i++ ) {
+                opt = sel.options[i];
+                if ( opt.selected === true ) {
+                    break;
+                }
+            }
+            return opt;
+        }
 
         const vscode = acquireVsCodeApi();
         function useAdvise() {
             let text_ = document.querySelector("#search").value;
-            vscode.postMessage({command: 'search', query: text_, journal: "{{ journal }}" })
+            let e = document.getElementById("journals");
+            let journal = getSelectedOption(e).value;
+            vscode.postMessage({command: 'search', query: text_, journal: journal })
         }
         let input = document.querySelector("#search");
         input.addEventListener("keyup", function(event) {
@@ -84,8 +122,9 @@
 
      <div>
         <select class="form-control" name="journals" id="journals">
+
             {{#each journals}}
-                <option value="{{ id }}">{{name}}</option>>
+                <option value="{{ id }}">{{name}}</option>
             {{/each}}
         </select>
     </div>

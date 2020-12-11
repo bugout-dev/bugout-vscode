@@ -8,6 +8,6 @@
     },
     // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
     "typescript.tsc.autoDetect": "off",
-    "Bugout.AccessToken": "02c27666-9b99-487b-a69d-accadfad65fa",
-    "Bugout.Api.endpoint": "https://181f73b7213f.ngrok.io"
+    "Bugout.AccessToken": "90bac822-2fe4-4504-a552-d9f0165cb53d",
+    "Bugout.Api.endpoint": "https://3ed8e822b19a.ngrok.io"
 }
