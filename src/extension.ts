@@ -6,7 +6,6 @@ import * as fs from 'fs';
 import * as showdown from 'showdown';
 import * as handlebars from 'handlebars';
 import * as highlight from 'highlight.js';
-//import * as shiki from 'shiki';
 import { BugOut} from './spireApi';
 import { title } from 'process';
 import { exception } from 'console';
@@ -102,12 +101,6 @@ async function editEntry(context: vscode.ExtensionContext,extensionUri: vscode.U
 
 }
 
-// const defaultThemesMap = {
-// 	'Visual Studio Light': 'vscode',
-// 	'Default Light+': 'light_plus',
-// 	'Visual Studio Dark': 'dark_vs',
-// 	'Default Dark+': 'dark_plus'
-// }
 
 const defaultThemesMap = {
 	'Visual Studio Light': 'github.css',
@@ -347,45 +340,6 @@ class searchResultsProvider {
 							} else {
 								return left + highlight.highlightAuto(match).value + right;
 							}
-
-					
-					
-					// let theme;
-
-					// if ( typeof currentThemeName === 'string') {
-					// 	if (defaultThemesMap[currentThemeName]) {
-					// 		theme = defaultThemesMap[currentThemeName];
-					// 	} else {
-					// 		const colorThemePath = getCurrentThemePath(currentThemeName);
-					// 		console.log('load');
-					// 		if (colorThemePath) {
-					// 			theme = shiki.loadTheme(colorThemePath);
-					// 			theme.name = 'random';// Shiki doesn't work without name and defaults to `Nord`
-					// 		}
-					// 	}
-					// }
-					// theme = shiki.getTheme(theme);
-
-					// let languageId = getLanguageId(lang);
-
-					// //const highlighter = shiki.getHighlighter({ theme });
-					// if (typeof languageId === 'string') {
-					// 	shiki.getHighlighter({ theme }).then(highlighter => {
-					// 		if( typeof highlighter != 'undefined' && highlighter.codeToHtml && languageId) {
-					// 			if (theme ) {
-					// 				return left + highlighter.codeToHtml(match, languageId) + right;
-					// 			} else {
-					// 				return left + highlighter.codeToHtml(match, languageId) + right;
-					// 			}
-					// 		}
-					// 	})
-					// } else {
-					// 	return left + match + right;
-
-					// }
-					
-											
-
 				};
 			  return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
 			}	
