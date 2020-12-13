@@ -17,15 +17,9 @@ Steps:
 
 - Api endpoint usual https://spire.bugout.dev can be different if you deploy Bugout prodaction in your interprice web.
 
-## Search via team journal
+## Search via team journal and add new entry
 
-<img src=https://i.imgur.com/arUchsn.gif>
-
-
-## Create entry
-
-<img src=https://i.imgur.com/H6nDlwj.gif>
-
+<img src=https://i.imgur.com/v4KoczO.gif>
 
 # current conditions
 
