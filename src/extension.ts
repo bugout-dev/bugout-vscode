@@ -6,9 +6,8 @@ import * as fs from 'fs';
 import * as showdown from 'showdown';
 import * as handlebars from 'handlebars';
 import * as highlight from 'highlight.js';
-import { BugOut} from './spireApi';
-import { title } from 'process';
-import { exception } from 'console';
+// import { title } from 'process';
+// import { exception } from 'console';
 //import * as shiki from 'shiki';
 
 
