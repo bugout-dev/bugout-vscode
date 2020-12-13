@@ -19,8 +19,7 @@ Steps:
 
 ## Search via team journal and add new entry
 
-<img src=https://i.imgur.com/cs63Gjm.gif>
-
+![demo](demo.gif)
 # current conditions
 
 - Commmands in command line( **CTRL+SHIFT+P** type Bugout).
