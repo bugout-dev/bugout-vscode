@@ -110,6 +110,10 @@ const defaultThemesMap = {
 	'Default Dark+': 'vs2015.css'
 }
 
+function float2int (value) {
+    return value | 0;
+}
+
 function getNonce() {
 	let text = '';
 	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -348,6 +352,7 @@ class searchResultsProvider {
 		let md = new showdown.Converter({tables: true,
 			simplifiedAutoLink: true,
 			strikethrough: true,
+			emoji: true,
 			tasklists: true,
 			ghCodeBlocks: true,
 			extensions:['highlight'],
@@ -359,6 +364,7 @@ class searchResultsProvider {
 		}}
 		console.log(`${api}/journals/${journal}/search?q=${query}`);
 		const result  = await axios.get(`${api}/journals/${journal}/search?q=${query}`,params) ///.then(function (response) {return response.data})
+
 		let data = result.data.results;
 		const request_journals  = await axios.get(`${api}/journals/`,params);
 		const journals = request_journals.data.journals;
@@ -377,12 +383,20 @@ class searchResultsProvider {
 		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.css'));
 		const codiconsFontUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.ttf'));
 		
-		let templateContent = '<div><div>title</div><div>tags</div><div >content</div></div>';
+		let templateContent =  '<div> \
+									<div> _title_ </div> \
+									<div> _tags_ </div> \
+									<div> _content_ </div> \
+									<div id="statistics_container"> \
+									    <div id="updated_at"> _updated_at_</div> \
+										<div id="search_score"> _score_ </div> \
+									</div> \
+								</div>';
 
 
 		let search_html_block = '';
 		for (var entry of data) {
-			//console.log(entry)
+			console.log(entry)
 			
 			let entry_represend = templateContent;
 			if (formating_off){
@@ -393,9 +407,15 @@ class searchResultsProvider {
 
 			}else{
 				///console.log(entry.content);
-				entry_represend = entry_represend.replace('title', md.makeHtml('## ' + entry.title + '\n'));
-				entry_represend = entry_represend.replace('tags', md.makeHtml('**Tags:** ' + '`' +  entry.tags.join('` | `') + '`'));
-				entry_represend = entry_represend.replace('content', md.makeHtml(entry.content));
+				entry_represend = entry_represend.replace('_title_', md.makeHtml('## ' + entry.title + '\n'));
+				entry_represend = entry_represend.replace('_tags_', md.makeHtml('**Tags:** ' + '`' +  entry.tags.join('` | `') + '`'));
+				entry_represend = entry_represend.replace('_content_', md.makeHtml(entry.content));
+				var date2 = new Date(entry.updated_at);
+				console.log(date2);
+				entry_represend = entry_represend.replace('_updated_at_', date2.toString());
+				entry_represend = entry_represend.replace('_score_', md.makeHtml('Score: '+ entry.score.toFixed(2).toString() +' | ' + ':star:'.repeat(float2int(entry.score))));
+
+
 
 			}
 
