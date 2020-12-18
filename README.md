@@ -19,7 +19,7 @@ Steps:
 
 ## Search via team journal and add new entry
 
-![demo](demo.gif)
+<img src=https://i.imgur.com/cs63Gjm.gif>
 
 
 # current conditions
