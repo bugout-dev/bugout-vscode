@@ -493,7 +493,7 @@ class searchResultsProvider {
 			entry['rendered_tags'] =  md.makeHtml('**Tags:** ' + '`' +  entry.tags.join('` | `') + '`');
 			entry['rendered_content'] =  md.makeHtml(entry.content);
 			entry['rendered_date'] = new Date(entry.updated_at).toString();
-			entry['rendered_score'] = md.makeHtml('Score: '+ entry.score.toFixed(2).toString() +' | ' + ':star:'.repeat(float2int(entry.score)));
+			entry['rendered_score'] = md.makeHtml('Score: '+ entry.score.toFixed(2).toString());
 			entry['edit_icon'] = md.makeHtml(':pencil2:');
 
 			// Use `key` and `value`

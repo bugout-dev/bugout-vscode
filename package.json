@@ -3,7 +3,7 @@
 	"displayName": "Bugout",
 	"description": "",
 	"publisher": "Bugout",
-	"version": "0.0.1",
+	"version": "0.1.1",
 	"icon": "media/bug-logo-01.png",
 	"engines": {
 		"vscode": "^1.51.0"
