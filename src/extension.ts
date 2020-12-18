@@ -56,6 +56,11 @@ function getBugoutConfig() {
 
 	return [api, token];
 }
+
+function sleep (time) {
+	return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 function getLanguageId(inId: string) {
     for (const language of languages) {
         if (inId === language.name || language.identifiers.some(langId => inId === langId)) {
@@ -145,6 +150,12 @@ class searchResultsProvider {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
+		
+		var editing_entry;
+
+		const config = getBugoutConfig();
+		const api = config[0];
+		const token = config[1];
 
 
 		
@@ -201,12 +212,69 @@ class searchResultsProvider {
 					if (panel != undefined) {
 						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, message.journal, message.query);
 					}
+					break;
 				  
 				
 				case 'swithcFormat':
 					if (panel != undefined) {
 						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, message.journal, message.query, message.format);
 					}
+					break;
+
+				case 'editing':
+					// generate editing view
+					if (panel != undefined) {
+						
+						panel.webview.html =  await this._getEditEntryHtmlForWebview(panel.webview,
+																					 context.extensionPath,
+																					 message.content,
+																					 message.title,
+																					 message.tags,
+																					 message.entry_id,
+																					 message.search_state);
+					}
+					break;
+
+				case 'saveEntry':
+					let entry = message.entry;
+
+
+					const options = {
+						headers : {
+							"x-bugout-client-id": "slack-some-track",
+							"Authorization": `Bearer ${token}`,
+						}
+					  };
+					
+					console.log(message);
+			
+					var payload: any  = {
+						"title": entry.title,
+						"content": entry.content,
+						"context_id": 'context_id',
+						"context_url": 'permalink',
+						"context_type": "vscode",
+					}
+					console.log(payload);
+					await axios.put(`${api}/journals/${message.journal_id}/entries/${message.entry_id}`, payload, options);
+					console.log(entry.tags.split(','));
+					payload  = {
+						"tags": entry.tags.split(',')
+					}
+					await axios.put(`${api}/journals/${message.journal_id}/entries/${message.entry_id}/tags`, payload, options);
+
+
+					if (panel != undefined) {
+						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, message.journal_id, message.query, message.format);
+					}
+					break;
+
+				case 'cancel':
+					if (panel != undefined) {
+						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, message.journal_id, message.query, message.format);
+					}
+					break;
+
 			  }
 			  return;
 			},
@@ -368,6 +436,19 @@ class searchResultsProvider {
 		let data = result.data.results;
 		const request_journals  = await axios.get(`${api}/journals/`,params);
 		const journals = request_journals.data.journals;
+
+
+		const load_tags  = await axios.get(`${api}/journals/${journals[0].id}/tags`,params); ///.then(function (response) {return response.data})
+		let tags = load_tags.data;
+
+		
+		console.log(tags);
+		var tags_option: any[] = [];
+
+		for (var tag of tags) {
+			tags_option.push({"text": tag[0], "value":tag[0]})
+		}
+
 		// Get resource paths
 
 		let theme = 'vs.css';
@@ -378,10 +459,13 @@ class searchResultsProvider {
 			}
 		}
 
-		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'jquery2.1.min.js')));
 		const highlightstyleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', theme));
-		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.css'));
-		const codiconsFontUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'node_modules', 'vscode-codicons', 'dist', 'codicon.ttf'));
+		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'jquery2.1.min.js')));
+		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastsearch.min.js')));	
+		const fastselect_css_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect.scss')));
+		const fastselect_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect_custom.js')));
+		const BaseContentUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri));
+
 		
 		let templateContent =  '<div> \
 									<div> _title_ </div> \
@@ -395,31 +479,23 @@ class searchResultsProvider {
 
 
 		let search_html_block = '';
-		for (var entry of data) {
+
+		let json_entries_object = JSON.stringify(data);
+
+		for (var [index,entry] of data.entries()) {
 			console.log(entry)
 			
 			let entry_represend = templateContent;
-			if (formating_off){
-				entry_represend = entry_represend.replace('title', entry.title);
-				entry_represend = entry_represend.replace('tags', entry.tags.join(' ') );
-				entry_represend = entry_represend.replace('content', entry.content);
-				//console.log(entry.content);
+			entry['index'] = index;
+			entry['entry_id'] = entry.entry_url.split('/')[entry.entry_url.split('/').length - 1];
+			entry['html_object'] = JSON.stringify(entry)
+			entry['rendered_title'] =  md.makeHtml('## ' + entry.title + '\n');
+			entry['rendered_tags'] =  md.makeHtml('**Tags:** ' + '`' +  entry.tags.join('` | `') + '`');
+			entry['rendered_content'] =  md.makeHtml(entry.content);
+			entry['rendered_date'] = new Date(entry.updated_at).toString();
+			entry['rendered_score'] = md.makeHtml('Score: '+ entry.score.toFixed(2).toString() +' | ' + ':star:'.repeat(float2int(entry.score)));
+			entry['edit_icon'] = md.makeHtml(':pencil2:');
 
-			}else{
-				///console.log(entry.content);
-				entry_represend = entry_represend.replace('_title_', md.makeHtml('## ' + entry.title + '\n'));
-				entry_represend = entry_represend.replace('_tags_', md.makeHtml('**Tags:** ' + '`' +  entry.tags.join('` | `') + '`'));
-				entry_represend = entry_represend.replace('_content_', md.makeHtml(entry.content));
-				var date2 = new Date(entry.updated_at);
-				console.log(date2);
-				entry_represend = entry_represend.replace('_updated_at_', date2.toString());
-				entry_represend = entry_represend.replace('_score_', md.makeHtml('Score: '+ entry.score.toFixed(2).toString() +' | ' + ':star:'.repeat(float2int(entry.score))));
-
-
-
-			}
-
-			search_html_block = search_html_block + '<br><hr class="solid">' + entry_represend
 			// Use `key` and `value`
 		}
 		if (search_html_block == '') {
@@ -428,11 +504,21 @@ class searchResultsProvider {
 		console.log(highlightstyleUri);
 
 		let prerender_data = {
+			data: data,
+			json_data: json_entries_object,
+			BaseContentUri : BaseContentUri,
 			vscodehighlight: highlightstyleUri,
 			search_html_block: search_html_block,
+			tags_option: JSON.stringify(tags_option),
 			query: query,
 			journal: journal,
-			journals : journals
+			journals : journals,
+
+			// load static
+			fastsearch_js_uri:fastsearch_js_uri,
+			fastselect_js_uri: fastselect_js_uri,
+			jquery_js_uri:jquery_js_uri,
+			fastselect_css_uri:fastselect_css_uri,
 		}
 
 		const bars_template = fs.readFileSync(path.join(extensionPath,'views/search.html'), 'utf-8');
@@ -442,7 +528,7 @@ class searchResultsProvider {
 		return template(prerender_data);
 	}
 
-	private async _getEditEntryHtmlForWebview(webview: vscode.Webview, extensionPath: string, content: string) {
+	private async _getEditEntryHtmlForWebview(webview: vscode.Webview, extensionPath: string, content: string, input_title?: string, input_tags?: string, entry_id?: string, search_state?: any) {
 
 		const config = getBugoutConfig();
 		const api = config[0];
@@ -454,7 +540,7 @@ class searchResultsProvider {
 		}};
 
 		const request_journals  = await axios.get(`${api}/journals/`,params);
-		const journals = request_journals.data.journals;
+		var journals = request_journals.data.journals;
 		
 
 		const result  = await axios.get(`${api}/journals/${journals[0].id}/tags`,params); ///.then(function (response) {return response.data})
@@ -471,15 +557,35 @@ class searchResultsProvider {
 		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'jquery2.1.min.js')));
 		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastsearch.min.js')));	
 		const fastselect_css_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect.scss')));
+		const fastselect_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect_custom.js')));
+
+		var tags_init_data;
+
+		if( input_tags != undefined) {
+			tags_init_data = "'[";
+			for( tag of input_tags.split(',')) {
+					console.log(tag);
+					tags_init_data = tags_init_data + `{"text":"${tag}","value":"${tag}"},`;
+				}
+				tags_init_data = tags_init_data.slice(0, -1) + "]'";
+		}
 
 		let data = {
 			fastsearch_js_uri:fastsearch_js_uri,
+			fastselect_js_uri: fastselect_js_uri,
 			jquery_js_uri:jquery_js_uri,
 			fastselect_css_uri:fastselect_css_uri,
-			content: content,
 			tags_option: JSON.stringify(tags_option),
-			journals: journals
+			journals: journals,
+			title: input_title,
+			content: content,
+			tags: input_tags,
+			tags_init_data: tags_init_data,
+			entry_id: entry_id,
+			search_state: search_state
+
 		}
+		
 
 		const bars_template = fs.readFileSync(path.join(extensionPath,'views/createEntry.html'), 'utf-8');
 		//console.log(bars_template);
