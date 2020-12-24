@@ -47,7 +47,7 @@
 			},
 			{
 				"command": "Bugout.addEntry",
-				"title": "Create entry"
+				"title": "Bugout: Create entry"
 			}
 		],
 		"views": {
