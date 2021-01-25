@@ -70,6 +70,42 @@ function getLanguageId(inId: string) {
     return undefined;
 };
 
+function handlebars_html_escape(template: string) {
+
+	let left_combination = new RegExp(/&amp;lt;/g);
+
+	let right_combination = new RegExp(/&amp;gt;/g);
+
+	let and_sign = new RegExp(/&amp;/g);
+	
+	let left_sign = new RegExp(/&lt;/g);
+
+	let right_sign = new RegExp(/&gt;/g);
+
+	let double_quots_sign = new RegExp(/&quot;/g);
+
+	let quots_sign = new RegExp(/&#x27;/g);
+
+	let empersgrave_accentam_sign = new RegExp(/&#x60;/g);
+
+	let equals_sign = new RegExp(/&#x3D;/g);
+
+
+	return template.replace(left_combination, '<')
+					.replace(right_combination,'>')
+					.replace(double_quots_sign,'"')
+					.replace(quots_sign,"'")
+					// .replace(left_sign,'<')
+					// .replace(right_sign,'>')
+					// .replace(and_sign,'&')
+					// .replace(double_quots_sign,'"')
+					// .replace(quots_sign,"'")
+					// .replace(empersgrave_accentam_sign,'`')
+					// .replace(equals_sign,'=')
+	// return template.split('&lt;').join('<').split('&gt;').join('<');
+
+}
+
 async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode.Uri,panel: vscode.WebviewPanel | undefined, bugoutProvider) { 
 	const query = await vscode.window.showInputBox();
 
@@ -231,7 +267,8 @@ class searchResultsProvider {
 																					 message.title,
 																					 message.tags,
 																					 message.entry_id,
-																					 message.search_state);
+																					 message.search_state,
+																					 message.journal_id);
 					}
 					break;
 
@@ -388,12 +425,17 @@ class searchResultsProvider {
 
 	}	
 	
-	private async _getSearchHtmlForWebview(webview: vscode.Webview, extensionPath: string, extensionUri: vscode.Uri, journal: string, query?: string, formating_off?: boolean) {
+	private async _getSearchHtmlForWebview(webview: vscode.Webview, extensionPath: string, extensionUri: vscode.Uri, journal: string, query?: string, , formating_off?: boolean) {
 
 		
 		const config = getBugoutConfig();
 		const api = config[0];
 		const token = config[1];
+
+		if (query == undefined)
+		{
+			query = '';
+		}
 
 		showdown.extension('highlight', function () {
 			return [{
@@ -422,6 +464,7 @@ class searchResultsProvider {
 			strikethrough: true,
 			emoji: true,
 			tasklists: true,
+			simpleLineBreaks: true,
 			ghCodeBlocks: true,
 			extensions:['highlight'],
 		    });
@@ -432,7 +475,8 @@ class searchResultsProvider {
 		}}
 		console.log(`${api}/journals/${journal}/search?q=${query}`);
 		const result  = await axios.get(`${api}/journals/${journal}/search?q=${query}`,params) ///.then(function (response) {return response.data})
-
+		console.log('result');
+		console.log(result);
 		let data = result.data.results;
 		const request_journals  = await axios.get(`${api}/journals/`,params);
 		const journals = request_journals.data.journals;
@@ -522,13 +566,13 @@ class searchResultsProvider {
 		}
 
 		const bars_template = fs.readFileSync(path.join(extensionPath,'views/search.html'), 'utf-8');
-		//console.log(bars_template);
+
 		const template = handlebars.compile(bars_template);
-		//console.log(template(prerender_data));
-		return template(prerender_data);
+		console.log(template(prerender_data));
+		return handlebars_html_escape(template(prerender_data));
 	}
 
-	private async _getEditEntryHtmlForWebview(webview: vscode.Webview, extensionPath: string, content: string, input_title?: string, input_tags?: string, entry_id?: string, search_state?: any) {
+	private async _getEditEntryHtmlForWebview(webview: vscode.Webview, extensionPath: string, content: string, input_title?: string, input_tags?: string, entry_id?: string, search_state?: any, journal_id?: string) {
 
 		const config = getBugoutConfig();
 		const api = config[0];
@@ -577,6 +621,7 @@ class searchResultsProvider {
 			fastselect_css_uri:fastselect_css_uri,
 			tags_option: JSON.stringify(tags_option),
 			journals: journals,
+			journal_id: journal_id,
 			title: input_title,
 			content: content,
 			tags: input_tags,
@@ -588,9 +633,9 @@ class searchResultsProvider {
 		
 
 		const bars_template = fs.readFileSync(path.join(extensionPath,'views/createEntry.html'), 'utf-8');
-		//console.log(bars_template);
+
 		const template = handlebars.compile(bars_template);
-		//console.log(template(data));
+		
 		return template(data);
 	}
 }

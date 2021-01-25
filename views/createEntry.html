@@ -144,9 +144,12 @@
         {{#each journals}}
             <option value="{{ id }}">{{name}}</option>>
         {{/each}}
+        
     </select>
     <script>
-
+        {{#if journal_id}}
+            document.getElementById("journals").value= "{{ journal_id }}";
+        {{/if}}
         const selectjournal = document.getElementById('journals');
 
 

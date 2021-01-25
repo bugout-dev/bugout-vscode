@@ -81,7 +81,7 @@
         var tags_preload = {{{ tags_option }}};
 
 
-        var current_search_state = {{{ json_data }}};
+        var current_search_state = {{ json_data }};
         
         window.addEventListener('message', event => {
             const message = event.data; // The JSON data our extension sent
@@ -130,7 +130,7 @@
 <div id="icons">
     <div>
     <input type="search" id="search" name="q"
-    aria-label="Search" placeholder="Search.." value="{{{ query }}}">
+    aria-label="Search" placeholder="Search.." value="{{ query }}">
     
         <script>
 
@@ -226,7 +226,8 @@
                                     content: window['entry_'+entry_index].content,
                                     tags: window['entry_'+entry_index].tags.join(','),
                                     editing: entry_index,
-                                    entry_id: entry_id })
+                                    entry_id: entry_id,
+                                    journal_id: window['entry_'+entry_index].entry_url.split('/')[4]})
 
 
                 // document.getElementById(entry_id).style.display = 'none';
@@ -255,7 +256,7 @@
             <br>
 
             <div id="{{ entry_id }}">
-                <script>var entry_{{{ index }}} = {{{ html_object }}};</script>
+                <script>var entry_{{{ index }}} = {{ html_object }};</script>
 
                 <button id="edit" style="background-color:rgba(118, 118, 118, 0)" onclick="entryToediting(this)" index="{{{ index }}}" value="{{{ entry_id }}}">✏️</button>
                 <div> {{{ rendered_title }}} </div>
