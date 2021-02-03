@@ -16,34 +16,13 @@ const editor = vscode.window.activeTextEditor;
 
 export async function activate(context: vscode.ExtensionContext) {
 
-	
+
 
     //Create your objects - Needs to be a well-formed JSON object.
 	let bugoutWebView: vscode.WebviewPanel | undefined = undefined;
-	// let resp = await axios.get("https://spire.bugout.dev/ping");
-	// console.log(resp);
-	// console.log(vscode.workspace.getConfiguration('workbench').get('colorTheme'));
-	// const config = getBugoutConfig();
-	// vscode.window.showInformationMessage(`endpoint = ${config[0]} | token = ${config[1]}`);
-
 	let bugoutProvider = new searchResultsProvider();
 
 	console.log(vscode.window.activeTextEditor);
-	// vscode.workspace.onDidChangeConfiguration((change) => {
-    //     if (change.affectsConfiguration('workbench.colorTheme')) {
-    //         for (var tabs of editor)
-    //     }
-    // }, undefined, context.subscriptions);
-
-	// Samples of `window.registerSpireDataProvider`
-	//const Provider = new BugOut(vscode.workspace.rootPath);
-	
-	// const fetresp = await( await fetch("https://spire.bugout.dev/ping")).text();
-	// console.log(fetresp);
-	// vscode.window.registerTreeDataProvider('Bugout.getJournals', nodeDependenciesProvider);
-	//let journals = await Provider.getJournalsTreeView()
-	//vscode.window.registerTreeDataProvider('journalsView', new TreeDataProvider(journals));
-	//let provider = new searchResultsProvider(context.extensionUri);
 	vscode.commands.registerCommand('Bugout.search', ()  => { searchInput(context, context.extensionUri,bugoutWebView, bugoutProvider);});
 	vscode.commands.registerCommand('Bugout.addEntry', () => { editEntry(context, context.extensionUri, bugoutWebView, bugoutProvider );});
 }
@@ -77,7 +56,7 @@ function handlebars_html_escape(template: string) {
 	let right_combination = new RegExp(/&amp;gt;/g);
 
 	let and_sign = new RegExp(/&amp;/g);
-	
+
 	let left_sign = new RegExp(/&lt;/g);
 
 	let right_sign = new RegExp(/&gt;/g);
@@ -95,18 +74,10 @@ function handlebars_html_escape(template: string) {
 					.replace(right_combination,'>')
 					.replace(double_quots_sign,'"')
 					.replace(quots_sign,"'")
-					// .replace(left_sign,'<')
-					// .replace(right_sign,'>')
-					// .replace(and_sign,'&')
-					// .replace(double_quots_sign,'"')
-					// .replace(quots_sign,"'")
-					// .replace(empersgrave_accentam_sign,'`')
-					// .replace(equals_sign,'=')
-	// return template.split('&lt;').join('<').split('&gt;').join('<');
 
 }
 
-async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode.Uri,panel: vscode.WebviewPanel | undefined, bugoutProvider) { 
+async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode.Uri,panel: vscode.WebviewPanel | undefined, bugoutProvider) {
 	const query = await vscode.window.showInputBox();
 
 	const config = getBugoutConfig();
@@ -115,11 +86,8 @@ async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode
 
 	let params = { headers : {"Authorization": `Bearer ${token}`}};
 
-	//await( await fetch("https://spire.bugout.dev/ping")).text();
 	const result  = await axios.get(`${api}/journals/`,params);
 	const journals = result.data.journals;
-	// const journals = await( await fetch(`${api}/journals`,params)).text();
-	// console.log(journals);
 	let journals_options: any = [];
 	for (var jornal of journals) {
 		journals_options.push({label: jornal.name , picked: false, id: jornal.id});
@@ -135,7 +103,7 @@ async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode
 
 }
 
-async function editEntry(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined, bugoutProvider) { 
+async function editEntry(context: vscode.ExtensionContext,extensionUri: vscode.Uri, panel: vscode.WebviewPanel | undefined, bugoutProvider) {
 
 	bugoutProvider.generateEditEntry(context,extensionUri, panel)
 
@@ -186,7 +154,7 @@ class searchResultsProvider {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
-		
+
 		var editing_entry;
 
 		const config = getBugoutConfig();
@@ -194,7 +162,7 @@ class searchResultsProvider {
 		const token = config[1];
 
 
-		
+
 		if (panel == undefined) {
 
 			//
@@ -202,28 +170,26 @@ class searchResultsProvider {
 				searchResultsProvider.viewType,
 				"[Bugout] journals",
 				vscode.ViewColumn.Beside
-				
+
 			);
 
 			panel.webview.options = {
 				enableScripts: true,
 				enableCommandUris: true,
-				localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))] 
+				localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))]
 			};
 		}
-		
+
 		panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, journal, query);
 
 		let theme = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'vs.css'));
-		
-		// 
+
+		//
 		vscode.workspace.onDidChangeConfiguration(() => {
-	
+
 			if (!panel || panel == undefined) {
 				return;
 			}
-
-			//vscode-webview-resource://2dcea161-ba74-4cc9-9c23-dc533fd19767/file///c%3A/Users/Andrey/vscode-extension-samples-master/Vs-code-integration/media/github.css
 
 			let currentThemeName = vscode.workspace.getConfiguration('workbench').get('colorTheme');
 			console.log
@@ -233,7 +199,7 @@ class searchResultsProvider {
 				}else {
 					theme = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'vs2015.css'));
 				}
-			}	
+			}
 			// Send a message to our webview.
 			// You can send any JSON serializable data.
 			panel.webview.postMessage({ command: 'update' , highlightStyle:`${theme.scheme}://${theme.authority}${theme.path}`});
@@ -249,8 +215,8 @@ class searchResultsProvider {
 						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, message.journal, message.query);
 					}
 					break;
-				  
-				
+
+
 				case 'swithcFormat':
 					if (panel != undefined) {
 						panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview, context.extensionPath, extensionUri, message.journal, message.query, message.format);
@@ -260,7 +226,7 @@ class searchResultsProvider {
 				case 'editing':
 					// generate editing view
 					if (panel != undefined) {
-						
+
 						panel.webview.html =  await this._getEditEntryHtmlForWebview(panel.webview,
 																					 context.extensionPath,
 																					 message.content,
@@ -282,9 +248,9 @@ class searchResultsProvider {
 							"Authorization": `Bearer ${token}`,
 						}
 					  };
-					
+
 					console.log(message);
-			
+
 					var payload: any  = {
 						"title": entry.title,
 						"content": entry.content,
@@ -318,7 +284,7 @@ class searchResultsProvider {
 			undefined,
 			context.subscriptions
 		  );
-		
+
 	}
 
 
@@ -339,7 +305,7 @@ class searchResultsProvider {
 		var selection = editor.selection;
 		var text = editor.document.getText(selection);
 		const ext = editor.document.fileName.split('.').pop();
-		
+
 		if (ext == 'py') {
 			text = '```python\n' + text + '\n```'
 		}
@@ -393,9 +359,9 @@ class searchResultsProvider {
 							"Authorization": `Bearer ${token}`,
 						}
 					  };
-					
+
 					console.log(message);
-			
+
 					let payload  = {
 						"title": entry.title,
 						"content": entry.content,
@@ -408,9 +374,6 @@ class searchResultsProvider {
 					await axios.post(`${api}/journals/${message.journal_id}/entries`, payload, options); ///.then(function (response) {return response.data})
 					axios.create()
 
-					// if (panel != undefined) {
-					// 	panel.webview.html =  await this._getSearchHtmlForWebview(panel.webview,  context.extensionPath, context.extensionUri, message.journal_id, '');
-					// }
 					vscode.window.showInformationMessage('A new entry was created in your journal.');
 					if (panel != undefined) {
 						panel.dispose();
@@ -420,14 +383,14 @@ class searchResultsProvider {
 			},
 			undefined,
 			context.subscriptions
-		  );		
+		  );
 
 
-	}	
-	
-	private async _getSearchHtmlForWebview(webview: vscode.Webview, extensionPath: string, extensionUri: vscode.Uri, journal: string, query?: string, , formating_off?: boolean) {
+	}
 
-		
+	private async _getSearchHtmlForWebview(webview: vscode.Webview, extensionPath: string, extensionUri: vscode.Uri, journal: string, query?: string, formating_off?: boolean) {
+
+
 		const config = getBugoutConfig();
 		const api = config[0];
 		const token = config[1];
@@ -455,10 +418,10 @@ class searchResultsProvider {
 							}
 				};
 			  return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
-			}	
+			}
 		  }];
 		});
-		
+
 		let md = new showdown.Converter({tables: true,
 			simplifiedAutoLink: true,
 			strikethrough: true,
@@ -485,7 +448,7 @@ class searchResultsProvider {
 		const load_tags  = await axios.get(`${api}/journals/${journals[0].id}/tags`,params); ///.then(function (response) {return response.data})
 		let tags = load_tags.data;
 
-		
+
 		console.log(tags);
 		var tags_option: any[] = [];
 
@@ -505,12 +468,12 @@ class searchResultsProvider {
 
 		const highlightstyleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', theme));
 		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'jquery2.1.min.js')));
-		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastsearch.min.js')));	
+		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastsearch.min.js')));
 		const fastselect_css_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect.scss')));
 		const fastselect_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect_custom.js')));
 		const BaseContentUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri));
 
-		
+
 		let templateContent =  '<div> \
 									<div> _title_ </div> \
 									<div> _tags_ </div> \
@@ -528,7 +491,7 @@ class searchResultsProvider {
 
 		for (var [index,entry] of data.entries()) {
 			console.log(entry)
-			
+
 			let entry_represend = templateContent;
 			entry['index'] = index;
 			entry['entry_id'] = entry.entry_url.split('/')[entry.entry_url.split('/').length - 1];
@@ -577,7 +540,7 @@ class searchResultsProvider {
 		const config = getBugoutConfig();
 		const api = config[0];
 		const token = config[1];
-		
+
 		let params = { headers : {
 			"x-bugout-client-id": "slack-some-track",
 			"Authorization": `Bearer ${token}`,
@@ -585,12 +548,12 @@ class searchResultsProvider {
 
 		const request_journals  = await axios.get(`${api}/journals/`,params);
 		var journals = request_journals.data.journals;
-		
+
 
 		const result  = await axios.get(`${api}/journals/${journals[0].id}/tags`,params); ///.then(function (response) {return response.data})
 		let tags = result.data;
 
-		
+
 		console.log(tags);
 		var tags_option: any[] = [];
 
@@ -599,7 +562,7 @@ class searchResultsProvider {
 		}
 		console.log(JSON.stringify(tags_option));
 		const jquery_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'jquery2.1.min.js')));
-		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastsearch.min.js')));	
+		const fastsearch_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastsearch.min.js')));
 		const fastselect_css_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect.scss')));
 		const fastselect_js_uri = webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'media', 'fastselect_custom.js')));
 
@@ -630,12 +593,12 @@ class searchResultsProvider {
 			search_state: search_state
 
 		}
-		
+
 
 		const bars_template = fs.readFileSync(path.join(extensionPath,'views/createEntry.html'), 'utf-8');
 
 		const template = handlebars.compile(bars_template);
-		
+
 		return template(data);
 	}
 }
