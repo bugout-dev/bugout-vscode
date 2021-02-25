@@ -92,13 +92,11 @@ async function searchInput(context: vscode.ExtensionContext,extensionUri: vscode
 	for (var jornal of journals) {
 		journals_options.push({label: jornal.name , picked: false, id: jornal.id});
 	}
-	console.log(journals);
 
 	const selected_journal: any= await vscode.window.showQuickPick(journals_options);
 	if (selected_journal == undefined) {
 		return;
 	}
-	console.log(typeof selected_journal)
 	bugoutProvider.getSearch(context,extensionUri, panel, selected_journal.id, query)
 
 }
@@ -192,7 +190,6 @@ class searchResultsProvider {
 			}
 
 			let currentThemeName = vscode.workspace.getConfiguration('workbench').get('colorTheme');
-			console.log
 			if (typeof currentThemeName === 'string' ) {
 				if (defaultThemesMap[currentThemeName]) {
 					theme = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', defaultThemesMap[currentThemeName]));
@@ -432,14 +429,18 @@ class searchResultsProvider {
 			extensions:['highlight'],
 		    });
 
-		let params = { headers : {
+		let auth_headers = {
 			"x-bugout-client-id": "slack-some-track",
 			"Authorization": `Bearer ${token}`,
-		}}
-		console.log(`${api}/journals/${journal}/search?q=${query}`);
-		const result  = await axios.get(`${api}/journals/${journal}/search?q=${query}`,params) ///.then(function (response) {return response.data})
+		};
+
+		let params_search = { headers : auth_headers};
+		const result  = await axios.get(`${api}/journals/${journal}/search?q=${encodeURIComponent(query)}`,params_search) ///.then(function (response) {return response.data})
 		console.log('result');
 		console.log(result);
+
+		let params = { headers : auth_headers };
+
 		let data = result.data.results;
 		const request_journals  = await axios.get(`${api}/journals/`,params);
 		const journals = request_journals.data.journals;
@@ -531,7 +532,6 @@ class searchResultsProvider {
 		const bars_template = fs.readFileSync(path.join(extensionPath,'views/search.html'), 'utf-8');
 
 		const template = handlebars.compile(bars_template);
-		console.log(template(prerender_data));
 		return handlebars_html_escape(template(prerender_data));
 	}
 
