@@ -1,8 +1,8 @@
 {
   "name": "Bugout",
   "repository": {
-	  "type": "git",
-	  "url": "https://github.com/bugout-dev/bugout-vscode.git"
+    "type": "git",
+    "url": "https://github.com/bugout-dev/bugout-vscode.git"
   },
   "displayName": "Bugout",
   "description": "",
@@ -20,26 +20,73 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsWelcome": [
+      {
+        "view": "bugoutView",
+        "contents": "Searching for journals from [Bugout.dev](https://bugout.dev)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "bugout-explorer",
+          "title": "Bugout Explorer",
+          "icon": "resources/logo.svg"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "python",
+        "aliases": [
+          "Python",
+          "python",
+          "py"
+        ]
+      }, {
+        "id": "javascript",
+        "aliases": [
+          "JavaScript",
+          "Javascript",
+          "javascript",
+          "js"
+        ]
+      }, {
+        "id": "typescript",
+        "aliases": [
+          "TypeScript",
+          "Typescript",
+          "typescript",
+          "ts"
+        ]
+      }
+    ],
     "configuration": {
       "title": "Bugout",
       "properties": {
         "Bugout.AccessToken": {
           "type": "string",
           "scope": "window",
-          "markdownDescription": "Put your bugout access token. Can find in your [Bugout account](https://alpha.bugout.dev/) page."
+          "markdownDescription": "Your personal access token. It can be found at your [Bugout account](https://bugout.dev/account/tokens) page."
         },
         "Bugout.Api.endpoint": {
           "type": "string",
           "default": "https://spire.bugout.dev",
           "scope": "window",
-          "markdownDescription": "Bugout api url for access to journal."
+          "markdownDescription": "Bugout API url for journal access."
+        },
+        "Bugout.Journal": {
+          "type": "string",
+          "scope": "window",
+          "markdownDescription": "Your journal ID for Exceptions search."
         }
       }
     },
     "menus": {
-      "editor/context": [
+      "view/title": [
         {
-          "command": "Bugout.addEntry",
+          "command": "bugoutView.refresh",
+          "when": "view == bugoutView",
           "group": "navigation"
         }
       ]
@@ -52,9 +99,28 @@
       {
         "command": "Bugout.addEntry",
         "title": "Bugout: Create entry"
+      },
+      {
+        "command": "Bugout.getJournalEntries",
+        "title": "Bugout: Get journal entries"
+      },
+      {
+        "command": "bugoutView.refresh",
+        "title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+        }
       }
     ],
     "views": {
+      "bugout-explorer": [
+        {
+          "id": "bugoutView",
+          "name": "Bugout Base",
+          "contextualTitle": "Journals Explorer"
+        }
+      ],
       "explorer": [
         {
           "id": "journalsView",
@@ -77,19 +143,19 @@
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",
+    "@types/handlebars": "^4.1.0",
+    "@types/highlight.js": "9.12.2",
     "@types/mocha": "^8.0.0",
     "@types/node": "^12.11.7",
-    "@types/vscode": "^1.51.0",
-    "@types/handlebars": "^4.1.0",
     "@types/showdown": "^1.9.3",
+    "@types/vscode": "^1.51.0",
     "@typescript-eslint/eslint-plugin": "^4.1.1",
     "@typescript-eslint/parser": "^4.1.1",
-    "@types/highlight.js": "9.12.2",
-    "node-fetch": "2.6.1",
     "axios": "^0.21.0",
     "eslint": "^7.9.0",
     "glob": "^7.1.6",
     "mocha": "^8.1.3",
+    "node-fetch": "2.6.1",
     "remark": "12.0.1",
     "remark-admonitions": "^1.2.1",
     "remark-html": "12.0.0",
