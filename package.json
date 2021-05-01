@@ -5,10 +5,10 @@
     "url": "https://github.com/bugout-dev/bugout-vscode.git"
   },
   "displayName": "Bugout",
-  "description": "",
+  "description": "Bugout VSCode extension",
   "publisher": "Bugout",
   "version": "0.1.4",
-  "icon": "media/bug-logo-01.png",
+  "icon": "resources/logo.png",
   "engines": {
     "vscode": "^1.51.0"
   },
@@ -23,7 +23,7 @@
     "viewsWelcome": [
       {
         "view": "bugoutView",
-        "contents": "Searching for journals from [Bugout.dev](https://bugout.dev)"
+        "contents": "Fetching journals from [Bugout.dev](https://bugout.dev)"
       }
     ],
     "viewsContainers": {
@@ -99,10 +99,6 @@
       {
         "command": "Bugout.addEntry",
         "title": "Bugout: Create entry"
-      },
-      {
-        "command": "Bugout.getJournalEntries",
-        "title": "Bugout: Get journal entries"
       },
       {
         "command": "bugoutView.refresh",

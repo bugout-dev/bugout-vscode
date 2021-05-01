@@ -2,14 +2,14 @@ import axios from "axios"
 
 import { bugoutSpireUrl, bugoutAccessToken } from "./settings"
 
-export async function bugoutGetSearchResults(journalId: string, q: string) {
+export async function bugoutGetSearchResults(journalId: string, q: string, content: boolean = false) {
 	let params = {
 		headers: {
 			Authorization: `Bearer ${bugoutAccessToken}`
 		}
 	}
 	const searchResult = await axios.get(
-		`${bugoutSpireUrl}/journals/${journalId}/search?q=${q}&content=true&limit=1`,
+		`${bugoutSpireUrl}/journals/${journalId}/search?q=${q}&content=${content}`,
 		params
 	)
 	return searchResult.data

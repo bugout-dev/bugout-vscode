@@ -9,7 +9,7 @@ export async function searchInput(
 	context: vscode.ExtensionContext,
 	panel: vscode.WebviewPanel | undefined,
 	bugoutSearchResultsProvider: SearchResultsProvider
-) {
+): Promise<void> {
 	const query = await vscode.window.showInputBox()
 	let params = { headers: { Authorization: `Bearer ${bugoutAccessToken}` } }
 
@@ -38,16 +38,11 @@ export async function editEntry(
 	bugoutSearchResultsProvider.generateEditEntry(context, extensionUri, panel)
 }
 
-enum PythonExceptions {
-	"BaseException",
-	"SystemExit",
-	"KeyboardInterrupt",
-	"GeneratorExit",
-	"Exception"
-}
 export async function exceptionsUsability(
 	document: vscode.TextDocument,
-	position: vscode.Position
+	position: vscode.Position,
+	token: vscode.CancellationToken,
+	exceptions: string[]
 ): Promise<vscode.Hover | null> {
 	/*
 	Check if hovered word is from Exceptions class, 
@@ -58,14 +53,16 @@ export async function exceptionsUsability(
 	}
 
 	const wordRange = document.getWordRangeAtPosition(position)
-	const word: string = document.getText(wordRange)
+	const text = document.getText(wordRange)
 
-	if (Object.values(PythonExceptions).includes(word)) {
-		let searchResult = await bugoutGetSearchResults(bugoutJournal, word)
+	if (exceptions.includes(text)) {
+		let searchResults = await bugoutGetSearchResults(bugoutJournal, `#error:${text}`)
+		console.log(`#error:${text}`)
+		console.log(searchResults)
 		const hoverContents = `
-This is python Exception: **${word}**. Search results:\n
-https://bugout.dev \n
-${searchResult.results[0].content}
+Python exception: **${text}** occurred: ${searchResults.total_results}\n
+Last exception recieved ${searchResults.results[0].created_at}:\n
+${searchResults.results[0].title} available by link: ${bugoutSpireUrl}/journals/${bugoutJournal}/search?q=#error:${text}&content=true
 `
 		return new vscode.Hover(hoverContents)
 	} else {
