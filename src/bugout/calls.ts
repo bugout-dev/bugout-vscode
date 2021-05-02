@@ -32,6 +32,5 @@ export async function bugoutGetJournalEntries(journalId: string) {
 		}
 	}
 	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries`, params)
-	console.log(result.data)
 	return result.data
 }

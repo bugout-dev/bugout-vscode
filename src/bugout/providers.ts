@@ -76,9 +76,9 @@ export class ListProvider implements vscode.TreeDataProvider<BugoutTreeItem> {
 		Run empty search to get journal entries.
 		*/
 		const searchResults = await bugoutGetSearchResults(journal.id, "", true)
-		SearchResultsProvider2.createOrShow(this.context.extensionUri)
+		SearchResultsProvider2.createOrShow(this.context.extensionUri, journal.id)
 		if (SearchResultsProvider2.currentPanel) {
-			await SearchResultsProvider2.currentPanel.doRefactor(this.context, journal, searchResults)
+			await SearchResultsProvider2.currentPanel.doRefactor(searchResults)
 		}
 	}
 
@@ -111,9 +111,9 @@ export class BugoutTreeItem extends vscode.TreeItem {
 
 export function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 	return {
-		enableScripts: true
-		// enableCommandUris: true,
-		// localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, "media"))]
+		enableScripts: true,
+		enableCommandUris: true,
+		localResourceRoots: [vscode.Uri.joinPath(extensionUri, "media")]
 	}
 }
 
@@ -123,6 +123,7 @@ export class SearchResultsProvider2 {
 	*/
 	public static currentPanel: SearchResultsProvider2 | undefined
 	public static readonly viewType = "Bugout panel"
+	public static journalId: string | undefined
 
 	private readonly _panel: vscode.WebviewPanel
 	private readonly _extensionUri: vscode.Uri
@@ -143,26 +144,41 @@ export class SearchResultsProvider2 {
 		// 	null,
 		// 	this._disposables
 		// )
+		this._panel.webview.onDidReceiveMessage(
+			async (message) => {
+				switch (message.command) {
+					case "testCommand":
+						const searchResults = await bugoutGetSearchResults(message.data.journalId, message.data.q, true)
+						SearchResultsProvider2.createOrShow(this._extensionUri, message.data.journalId)
+						if (SearchResultsProvider2.currentPanel) {
+							await SearchResultsProvider2.currentPanel.doRefactor(searchResults)
+						}
+				}
+			},
+			null,
+			this._disposables
+		)
 	}
 
-	public static createOrShow(extensionUri: vscode.Uri) {
+	public static createOrShow(extensionUri: vscode.Uri, journalId: string) {
 		/*
 		Generate new panel or show existing one.
 		*/
+		this.journalId = journalId
 		const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined
 
 		if (SearchResultsProvider2.currentPanel) {
-			console.log("If we already have a panel, show it")
+			console.log("Showing existing Bugout panel")
 			SearchResultsProvider2.currentPanel._panel.reveal(column)
 			return
 		}
 
-		console.log("Otherwise, create a new panel")
+		console.log("Create new Bugout panel")
 		const panel = vscode.window.createWebviewPanel(
 			SearchResultsProvider2.viewType,
 			"Bugout panel",
-			column || vscode.ViewColumn.One
-			// getWebviewOptions(extensionUri)
+			column || vscode.ViewColumn.One,
+			getWebviewOptions(extensionUri)
 		)
 
 		SearchResultsProvider2.currentPanel = new SearchResultsProvider2(panel, extensionUri)
@@ -175,30 +191,16 @@ export class SearchResultsProvider2 {
 		SearchResultsProvider2.currentPanel = new SearchResultsProvider2(panel, extensionUri)
 	}
 
-	public async doRefactor(context: vscode.ExtensionContext, journal: any, searchResults: any) {
+	public async doRefactor(searchResults: any) {
 		/*
 		Send any JSON serializable data to the webview.
 		*/
-
-		// console.log(this._panel.webview)
-		// this._panel.webview.postMessage({ command: command, data: data })
-
-		// console.log(1)
-		// this._panel.webview.onDidReceiveMessage(
-		// 	async (message) => {
-		// 		console.log(message)
-		// 		switch (message.command) {
-		// 			case "update":
-		// 				console.log(message.data.id)
-		// 				return
-		// 		}
-		// 	},
-		// 	null,
-		// 	this._disposables
-		// )
-
 		const webview = this._panel.webview
-		this._panel.webview.html = await this._getHtmlForWebview(context, webview, journal, searchResults)
+		this._panel.webview.html = await this._getHtmlForWebview(
+			webview,
+			SearchResultsProvider2.journalId,
+			searchResults
+		)
 	}
 
 	public dispose() {
@@ -215,21 +217,11 @@ export class SearchResultsProvider2 {
 		}
 	}
 
-	private async _getHtmlForWebview(
-		context: vscode.ExtensionContext,
-		webview: vscode.Webview,
-		journal: any,
-		searchResults: any
-	) {
+	private async _getHtmlForWebview(webview: vscode.Webview, journalId: any, searchResults: any) {
 		/*
 		Render HTML for Webview.
 		*/
-		webview.options = {
-			enableScripts: true,
-			enableCommandUris: true,
-			localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, "media"))]
-		}
-		const renderResult = searchHTML(webview, journal, searchResults)
+		const renderResult = searchHTML(webview, this._extensionUri, journalId, searchResults)
 		return renderResult
 	}
 }
