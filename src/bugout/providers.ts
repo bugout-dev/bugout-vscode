@@ -148,12 +148,12 @@ export class BugoutSearchResultsProvider {
 		const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined
 
 		if (BugoutSearchResultsProvider.currentPanel) {
-			console.log("Showing existing Bugout panel")
+			// Showing existing Bugout panel
 			BugoutSearchResultsProvider.currentPanel._panel.reveal(column)
 			return
 		}
 
-		console.log("Create new Bugout panel")
+		// Create new Bugout panel
 		const panel = vscode.window.createWebviewPanel(
 			BugoutSearchResultsProvider.viewType,
 			"Bugout panel",
@@ -248,11 +248,11 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 						}
 					})
 
-					vscode.workspace.onDidCloseTextDocument((document) => {
-						if (document === doc) {
-							console.log("Entry was closed")
-						}
-					})
+					// vscode.workspace.onDidCloseTextDocument((document) => {
+					// 	if (document === doc) {
+					// 		console.log("Entry was closed")
+					// 	}
+					// })
 				})
 			})
 		})
