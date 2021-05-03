@@ -2,13 +2,13 @@ import * as vscode from "vscode"
 import axios from "axios"
 
 import { bugoutGetSearchResults } from "./calls"
-import { SearchResultsProvider } from "./providers"
+import { SearchResultsProviderOld } from "./old"
 import { bugoutSpireUrl, bugoutAccessToken, bugoutJournal } from "./settings"
 
 export async function searchInput(
 	context: vscode.ExtensionContext,
 	panel: vscode.WebviewPanel | undefined,
-	bugoutSearchResultsProvider: SearchResultsProvider
+	bugoutSearchResultsProvider: SearchResultsProviderOld
 ): Promise<void> {
 	const query = await vscode.window.showInputBox()
 	let params = { headers: { Authorization: `Bearer ${bugoutAccessToken}` } }
@@ -33,7 +33,7 @@ export async function editEntry(
 	context: vscode.ExtensionContext,
 	extensionUri: vscode.Uri,
 	panel: vscode.WebviewPanel | undefined,
-	bugoutSearchResultsProvider: SearchResultsProvider
+	bugoutSearchResultsProvider: SearchResultsProviderOld
 ) {
 	bugoutSearchResultsProvider.generateEditEntry(context, extensionUri, panel)
 }

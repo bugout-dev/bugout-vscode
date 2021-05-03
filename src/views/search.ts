@@ -18,6 +18,8 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 	let entriesBlocks: string = ``
 	let tagsBlock: string = ``
 	searchResults.results.forEach((entry: any) => {
+		let entryUrlList = entry.entry_url.split("/")
+		let entryId = entryUrlList[entryUrlList.length - 1]
 		entry.tags.forEach((tag: string) => {
 			tagsBlock += `
 <p class="entry-tag">${tag}</p>
@@ -26,7 +28,10 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 
 		let entryTitleP = `
 <div>
-<h1 class="entry-title">${entry.title}</h1>
+<div class="titles">
+	<h1 class="entry-title">${entry.title}</h1>
+	<input type="button" class="edit-button" value="Edit" data-journal="${journalId}" data-entry="${entryId}">
+</div>
 <span>${tagsBlock}</span>
 <span class="entry-markdown">${converter.makeHtml(entry.content)}</span>
 <br>
@@ -60,33 +65,17 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 	</head>
 	<body>
 		<div class="header">
-			<input placeholder="Entries search" type="search" name="q" id="journal-search">
+			<input placeholder="Entries search" type="search" name="q" id="journal-search" data-journal="${journalId}">
         </div>
+		<br>
 		<div id="entries">${entriesBlocks}</div>
-		<div id="canvasSection"><canvas id="vscodeTestCanvas" /></div>
+		
 		<script nonce="${nonce}">
 			// Rewrite styles with dynamic values
-			document.getElementById("journal-search").style.color = "${colorizeAsThemeOpposite}";
-
-			// Handle VSCode logic
-			const vscode = acquireVsCodeApi();
-
-			function searchJournal(journalSearchInputValue) {
-				vscode.postMessage({
-					command: "testCommand",
-					data: {q: journalSearchInputValue, journalId: "${journalId}"}
-				});
-			}
-
-			window.onload = () => {
-				let journalSearchInput = document.getElementById("journal-search");
-				journalSearchInput.addEventListener("keypress", (event) => {
-					if (event.key === "Enter") {
-						event.preventDefault();
-						searchJournal(journalSearchInput.value);
-					}
-				});
-			}
+			let inputs = document.getElementsByTagName("input");
+			Array.from(inputs, input => {
+				input.style.color = "${colorizeAsThemeOpposite}";
+			})
 		</script>
 	</body>
 </html>
@@ -101,4 +90,20 @@ function getNonce() {
 		text += possible.charAt(Math.floor(Math.random() * possible.length))
 	}
 	return text
+}
+
+export function entryToMarkdown(entryResult): string {
+	const vscodeEntryContent = `# ${entryResult.title}
+
+${entryResult.content}
+`
+	return vscodeEntryContent
+}
+
+export function markdownToEntry(markdown: string) {
+	const markdownList = markdown.split("\n")
+	let entryTitle: string | undefined = undefined
+	let entryContent: string | undefined = undefined
+	
+	return { title: entryTitle, content: entryContent }
 }

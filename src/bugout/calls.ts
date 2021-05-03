@@ -34,3 +34,23 @@ export async function bugoutGetJournalEntries(journalId: string) {
 	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries`, params)
 	return result.data
 }
+
+export async function bugoutGetJournalEntry(journalId: string, entryId: string) {
+	let params = {
+		headers: {
+			Authorization: `Bearer ${bugoutAccessToken}`
+		}
+	}
+	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}`, params)
+	return result.data
+}
+
+// export async function bugoutUpdateJournalEntry(journalId: string, entryId: string) {
+// 	let params = {
+// 		headers: {
+// 			Authorization: `Bearer ${bugoutAccessToken}`
+// 		}
+// 	}
+// 	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}`, params)
+// 	return result.data
+// }

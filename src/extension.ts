@@ -2,50 +2,43 @@ import * as vscode from "vscode"
 
 import { searchInput, editEntry, exceptionsUsability } from "./bugout/actions"
 import { bugoutGetSearchResults, bugoutGetJournalEntries } from "./bugout/calls"
-import { SearchResultsProvider, SearchResultsProvider2, getWebviewOptions, ListProvider } from "./bugout/providers"
+import {
+	BugoutSearchResultsProvider,
+	bugoutGetWebviewOptions,
+	BugoutListProvider,
+	EntryDocumentContentProvider
+} from "./bugout/providers"
+import { SearchResultsProviderOld } from "./bugout/old"
 import { bugoutJournal } from "./bugout/settings"
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 	/*
 	VS Code API: https://code.visualstudio.com/api/references/vscode-api
 	*/
-	// console.log(vscode.window.activeTextEditor)
-	// console.log(context.workspaceState)
-
-	// Create your objects - Needs to be a well-formed JSON object.
-	let bugoutWebView: vscode.WebviewPanel | undefined = undefined
-	let bugoutsearchResultsProvider = new SearchResultsProvider()
 
 	// Side bar Bugout Tree View
-	const bugoutListProvider = new ListProvider(context)
+	// TODO(kompotkot): Implement schema checks as for TextDocumentContentProvider
+	const bugoutListProvider = new BugoutListProvider(context)
 	vscode.window.registerTreeDataProvider("bugoutView", bugoutListProvider)
 	vscode.commands.registerCommand("bugoutView.refresh", () => bugoutListProvider.refresh())
-	vscode.commands.registerCommand("extension.select", (journal) =>
-		bugoutListProvider.select(journal, bugoutWebView, bugoutsearchResultsProvider)
-	)
+	vscode.commands.registerCommand("extension.select", (journal) => bugoutListProvider.bugoutSelect(journal))
 
-	// Register to revive panel in future
+	// Register to revive Bugout search panel in future
 	if (vscode.window.registerWebviewPanelSerializer) {
-		vscode.window.registerWebviewPanelSerializer(SearchResultsProvider2.viewType, {
+		vscode.window.registerWebviewPanelSerializer(BugoutSearchResultsProvider.viewType, {
 			async deserializeWebviewPanel(webviewPanel: vscode.WebviewPanel, state: any) {
-				console.log(`Got state: ${state}`)
-				webviewPanel.webview.options = getWebviewOptions(context.extensionUri)
-				SearchResultsProvider2.revive(webviewPanel, context.extensionUri)
+				webviewPanel.webview.options = bugoutGetWebviewOptions(context.extensionUri)
+				BugoutSearchResultsProvider.revive(webviewPanel, context.extensionUri)
 			}
 		})
 	}
-	// vscode.commands.registerCommand("bugoutView.select", () => console.log("123"))
-	// const bugoutTreeView = vscode.window.createTreeView("bugoutView", {
-	// 	treeDataProvider: bugoutListProvider
-	// })
-	// context.subscriptions.push(bugoutTreeView)
 
-	// Palette commands
-	vscode.commands.registerCommand("Bugout.search", () => {
-		searchInput(context, bugoutWebView, bugoutsearchResultsProvider)
-	})
-	vscode.commands.registerCommand("Bugout.addEntry", () => {
-		editEntry(context, context.extensionUri, bugoutWebView, bugoutsearchResultsProvider)
+	// Entry editor logic
+	const myScheme = "bugout"
+	const entryProvider = new EntryDocumentContentProvider()
+	vscode.workspace.registerTextDocumentContentProvider(myScheme, entryProvider)
+	vscode.commands.registerCommand("Bugout.editEntry", async (entryResult) => {
+		await entryProvider.bugoutEditEntry(entryResult)
 	})
 
 	// Exceptions search Hover
@@ -76,40 +69,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			)
 		})
 	}
-	// vscode.languages.registerReferenceProvider(documentSelector, {
-	// 	provideReferences(
-	// 		document: vscode.TextDocument,
-	// 		position: vscode.Position,
-	// 		options: { includeDeclaration: boolean },
-	// 		token: vscode.CancellationToken
-	// 	): any {
-	// 		console.log(123)
-	// 	}
-	// })
 
-	// // Register go to definiton provider
-	// vscode.languages.registerDefinitionProvider(documentSelector, {
-	// 	provideDefinition(
-	// 		document: vscode.TextDocument,
-	// 		position: vscode.Position,
-	// 		token: vscode.CancellationToken
-	// 	): any {
-	// 		console.log("qwe")
-	// 	}
-	// })
-
-	// Triggers when you are type this symbol
-	// vscode.languages.registerSignatureHelpProvider({language: "python"}, {
-	// 	provideSignatureHelp(
-	// 		document: vscode.TextDocument,
-	// 		position: vscode.Position,
-	// 		token: vscode.CancellationToken
-	// 	): vscode.SignatureHelp {
-	// 		console.log("test")
-	// 		const SignatureHelp = new vscode.SignatureHelp()
-	// 		return SignatureHelp
-	// 	}
-	// }, ")")
+	// // // Deprecated
+	// Create your objects - Needs to be a well-formed JSON object.
+	let bugoutWebView: vscode.WebviewPanel | undefined = undefined
+	let bugoutsearchResultsProviderOld = new SearchResultsProviderOld()
+	// Palette commands
+	vscode.commands.registerCommand("Bugout.search", () => {
+		searchInput(context, bugoutWebView, bugoutsearchResultsProviderOld)
+	})
+	vscode.commands.registerCommand("Bugout.addEntry", () => {
+		editEntry(context, context.extensionUri, bugoutWebView, bugoutsearchResultsProviderOld)
+	})
 }
 
 export async function deactivate(): Promise<void> {}
