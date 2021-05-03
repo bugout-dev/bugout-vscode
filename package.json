@@ -1,16 +1,9 @@
 {
   "name": "Bugout",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bugout-dev/bugout-vscode.git"
-  },
   "displayName": "Bugout",
-  "description": "Bugout VSCode extension",
-  "publisher": "Bugout",
-  "version": "0.1.4",
-  "icon": "resources/logo.png",
+  "version": "0.2.0",
   "engines": {
-    "vscode": "^1.51.0"
+    "vscode": "^1.55.0"
   },
   "categories": [
     "Other"
@@ -18,7 +11,34 @@
   "activationEvents": [
     "*"
   ],
+  "description": "Bugout VSCode extension",
+  "publisher": "Bugout",
+  "icon": "resources/logo.png",
   "main": "./dist/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack --devtool nosources-source-map --config ./webpack.config.js",
+    "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
+    "package": "webpack --mode production --config ./webpack.config.js",
+    "test-compile": "tsc -p ./",
+    "test-watch": "tsc -watch -p ./",
+    "pretest": "npm run test-compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bugout-dev/bugout-vscode.git"
+  },
+  "keywords": [
+    "bugout"
+  ],
+  "author": "Bugout.dev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bugout-dev/bugout-vscode/issues"
+  },
+  "homepage": "https://github.com/bugout-dev/bugout-vscode#readme",
   "contributes": {
     "viewsWelcome": [
       {
@@ -35,32 +55,6 @@
         }
       ]
     },
-    "languages": [
-      {
-        "id": "python",
-        "aliases": [
-          "Python",
-          "python",
-          "py"
-        ]
-      }, {
-        "id": "javascript",
-        "aliases": [
-          "JavaScript",
-          "Javascript",
-          "javascript",
-          "js"
-        ]
-      }, {
-        "id": "typescript",
-        "aliases": [
-          "TypeScript",
-          "Typescript",
-          "typescript",
-          "ts"
-        ]
-      }
-    ],
     "configuration": {
       "title": "Bugout",
       "properties": {
@@ -93,19 +87,15 @@
     },
     "commands": [
       {
-        "command": "Bugout.search",
-        "title": "Bugout: Search in team journal"
-      },
-      {
-        "command": "Bugout.addEntry",
-        "title": "Bugout: Create entry"
+        "command": "Bugout.editEntry",
+        "title": "Bugout: Edit entry"
       },
       {
         "command": "bugoutView.refresh",
         "title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
         }
       }
     ],
@@ -126,48 +116,25 @@
       ]
     }
   },
-  "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "webpack --devtool nosources-source-map --config ./build/node-extension.webpack.config.js",
-    "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./build/node-extension.webpack.config.js",
-    "package": "webpack --mode production --config ./build/node-extension.webpack.config.js",
-    "test-compile": "tsc -p ./",
-    "test-watch": "tsc -watch -p ./",
-    "pretest": "npm run test-compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+  "dependencies": {
+    "axios": "^0.21.1",
+    "showdown": "^1.9.1"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",
-    "@types/handlebars": "^4.1.0",
-    "@types/highlight.js": "9.12.2",
-    "@types/mocha": "^8.0.0",
+    "@types/mocha": "^8.0.4",
     "@types/node": "^12.11.7",
     "@types/showdown": "^1.9.3",
-    "@types/vscode": "^1.51.0",
-    "@typescript-eslint/eslint-plugin": "^4.1.1",
-    "@typescript-eslint/parser": "^4.1.1",
-    "axios": "^0.21.0",
-    "eslint": "^7.9.0",
+    "@types/vscode": "^1.55.0",
+    "@typescript-eslint/eslint-plugin": "^4.14.1",
+    "@typescript-eslint/parser": "^4.14.1",
+    "eslint": "^7.19.0",
     "glob": "^7.1.6",
-    "mocha": "^8.1.3",
-    "node-fetch": "2.6.1",
-    "remark": "12.0.1",
-    "remark-admonitions": "^1.2.1",
-    "remark-html": "12.0.0",
-    "ts-loader": "^8.0.3",
-    "typescript": "^4.0.2",
-    "vscode-test": "^1.4.0",
-    "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12"
-  },
-  "dependencies": {
-    "@types/handlebars": "^4.1.0",
-    "@types/node-fetch": "^2.5.7",
-    "@types/showdown": "^1.9.3",
-    "handlebars": "^4.7.6",
-    "highlight.js": "^10.4.1",
-    "showdown": "^1.9.1",
-    "showdown-highlight": "^2.1.5"
+    "mocha": "^8.2.1",
+    "ts-loader": "^8.0.14",
+    "typescript": "^4.1.3",
+    "vscode-test": "^1.5.0",
+    "webpack": "^5.19.0",
+    "webpack-cli": "^4.4.0"
   }
 }

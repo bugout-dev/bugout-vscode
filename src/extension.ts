@@ -1,14 +1,13 @@
 import * as vscode from "vscode"
 
-import { searchInput, editEntry, exceptionsUsability } from "./bugout/actions"
-import { bugoutGetSearchResults, bugoutGetJournalEntries } from "./bugout/calls"
+import { exceptionsUsability } from "./bugout/actions"
+import { bugoutGetSearchResults } from "./bugout/calls"
 import {
 	BugoutSearchResultsProvider,
 	bugoutGetWebviewOptions,
 	BugoutListProvider,
 	EntryDocumentContentProvider
 } from "./bugout/providers"
-import { SearchResultsProviderOld } from "./bugout/old"
 import { bugoutJournal } from "./bugout/settings"
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
@@ -70,17 +69,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		})
 	}
 
-	// // // Deprecated
-	// Create your objects - Needs to be a well-formed JSON object.
-	let bugoutWebView: vscode.WebviewPanel | undefined = undefined
-	let bugoutsearchResultsProviderOld = new SearchResultsProviderOld()
-	// Palette commands
-	vscode.commands.registerCommand("Bugout.search", () => {
-		searchInput(context, bugoutWebView, bugoutsearchResultsProviderOld)
-	})
-	vscode.commands.registerCommand("Bugout.addEntry", () => {
-		editEntry(context, context.extensionUri, bugoutWebView, bugoutsearchResultsProviderOld)
-	})
 }
 
 export async function deactivate(): Promise<void> {}

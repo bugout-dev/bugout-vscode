@@ -2,7 +2,7 @@ import * as vscode from "vscode"
 import * as path from "path"
 
 import { bugoutGetJournals, bugoutGetSearchResults, bugoutGetJournalEntry } from "./calls"
-import { searchHTML, entryToMarkdown, markdownToEntry } from "../views/search"
+import { searchHTML, entryToMarkdown, markdownToEntry } from "./views"
 
 export class BugoutListProvider implements vscode.TreeDataProvider<BugoutTreeItem> {
 	/*
