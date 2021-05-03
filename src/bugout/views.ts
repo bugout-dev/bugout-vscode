@@ -110,6 +110,15 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 			Array.from(inputs, input => {
 				input.style.color = "${colorizeAsThemeOpposite}";
 			})
+
+			let journalSearchBar = document.getElementById("journal-search");
+			journalSearchBar.style.borderColor = "${colorizeAsThemeOpposite}";
+
+			let tags = document.getElementsByTagName("entry-tag");
+			Array.from(tags, tag => {
+				tag.style.box-shadow = "${colorizeAsThemeOpposite}";
+			})
+
 		</script>
 	</body>
 </html>

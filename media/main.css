@@ -16,7 +16,7 @@ TODO(kompotkot): Revome hardcoded colors, move to script.
 	padding: 0.5rem 1rem;
     height: 2.5rem;
     border-radius: 0.375rem;
-    border: 1px solid white;
+    border: 1px solid;
 	background:transparent;
 }
 
@@ -79,7 +79,7 @@ TODO(kompotkot): Revome hardcoded colors, move to script.
     border-radius: 0.375rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    box-shadow: white 0px 0px 1px 1px;
+    box-shadow: 0px 0px 1px 1px;
     transition: all 0.1s ease 0s;
     z-index: 1;
 }
