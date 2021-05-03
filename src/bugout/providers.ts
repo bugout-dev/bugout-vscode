@@ -1,7 +1,7 @@
 import * as vscode from "vscode"
 import * as path from "path"
 
-import { bugoutGetJournals, bugoutGetSearchResults, bugoutGetJournalEntry } from "./calls"
+import { bugoutGetJournals, bugoutGetSearchResults, bugoutGetJournalEntry, bugoutUpdateJournalEntry } from "./calls"
 import { searchHTML, entryToMarkdown, markdownToEntry } from "./views"
 
 export class BugoutListProvider implements vscode.TreeDataProvider<BugoutTreeItem> {
@@ -206,6 +206,8 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 	/*
 	Represents new document for entry.
 	*/
+	private bugoutTimeoutActive: NodeJS.Timeout | undefined
+
 	onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>()
 	onDidChange = this.onDidChangeEmitter.event
 
@@ -222,20 +224,33 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 
 					const entryString = entryToMarkdown(entryResult)
 					editText.insert(new vscode.Position(0, 0), entryString)
-					// editedTimestamp = Math.floor(Date.now() / 1000)
-					// vscode.workspace.onDidChangeTextDocument(async (editedDoc) => {
-					// 	if (editedDoc.document === doc) {
-					// 		editedTimestamp = Math.floor(Date.now() / 1000)
-					// 		await delay(5000)
-					// 		if (Math.floor(Date.now() / 1000) - editedTimestamp === 5) {
-					// 			console.log("Save it")
-					// 		}
-					// 	}
-					// })
+
+					// Handle entry editing
+					vscode.workspace.onDidChangeTextDocument(async (editedDoc) => {
+						if (editedDoc.document === doc) {
+							// TODO(kompotkot): Add checks if was not parsed, throw an error 
+							// to inform user modify entry with rules
+							const entryUpdatedData = markdownToEntry(editedDoc.document.getText())
+							if (entryUpdatedData) {
+								if (this.bugoutTimeoutActive !== undefined) {
+									clearTimeout(this.bugoutTimeoutActive)
+								}
+								let timeout = setTimeout(async () => {
+									if (this.bugoutTimeoutActive !== undefined) {
+										const updatedEntry = await bugoutUpdateJournalEntry(journalId, entryId, entryUpdatedData)
+										if (updatedEntry.title === entryUpdatedData.title) {
+											vscode.window.showInformationMessage("Entry was successfully updated, you can safely close the window")
+										}
+									}
+								}, 5000)
+								this.bugoutTimeoutActive = timeout
+							}
+						}
+					})
+
 					vscode.workspace.onDidCloseTextDocument((document) => {
 						if (document === doc) {
-							const entryUpdated = markdownToEntry(document.getText())
-							console.log(`Updated entry entryId: ${entryId}, journalId: ${journalId}`)
+							console.log("Entry was closed")
 						}
 					})
 				})

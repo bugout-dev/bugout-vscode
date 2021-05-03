@@ -45,12 +45,17 @@ export async function bugoutGetJournalEntry(journalId: string, entryId: string) 
 	return result.data
 }
 
-// export async function bugoutUpdateJournalEntry(journalId: string, entryId: string) {
-// 	let params = {
-// 		headers: {
-// 			Authorization: `Bearer ${bugoutAccessToken}`
-// 		}
-// 	}
-// 	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}`, params)
-// 	return result.data
-// }
+export async function bugoutUpdateJournalEntry(journalId: string, entryId: string, entryData) {
+	const params = {
+		headers: {
+			Authorization: `Bearer ${bugoutAccessToken}`
+		}
+	}
+	const payload = {
+		title: entryData.title,
+		content: entryData.content,
+		context_type: "vscode"
+	}
+	const result = await axios.put(`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}`, payload, params)
+	return result.data
+}

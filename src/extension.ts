@@ -11,9 +11,7 @@ import {
 import { bugoutJournal } from "./bugout/settings"
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-	/*
-	VS Code API: https://code.visualstudio.com/api/references/vscode-api
-	*/
+	const myScheme = "bugout"
 
 	// Side bar Bugout Tree View
 	// TODO(kompotkot): Implement schema checks as for TextDocumentContentProvider
@@ -33,10 +31,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 	}
 
 	// Entry editor logic
-	const myScheme = "bugout"
+	// TODO(kompotkot): Rewrite this to CustomTextRditor
 	const entryProvider = new EntryDocumentContentProvider()
 	vscode.workspace.registerTextDocumentContentProvider(myScheme, entryProvider)
 	vscode.commands.registerCommand("Bugout.editEntry", async (entryResult) => {
+		vscode.window.showWarningMessage(
+			`The entry should start with a title: "# ${entryResult.title.slice(0, 6)}.." followed by the content`
+		)
 		await entryProvider.bugoutEditEntry(entryResult)
 	})
 
@@ -51,8 +52,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 				}
 			})
 		})
-
-		const languages = ["python", "typescript"]
+		const languages = ["python", "typescript", "javascript"]
 		languages.forEach((language) => {
 			vscode.languages.registerHoverProvider(
 				{ language: language },
@@ -68,7 +68,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			)
 		})
 	}
-
 }
 
 export async function deactivate(): Promise<void> {}

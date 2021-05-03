@@ -1,6 +1,40 @@
 import { Webview, workspace, Uri } from "vscode"
 import { Converter } from "showdown"
 
+export function entryToMarkdown(entryResult): string {
+	/*
+	Convert entry to markdown preview.
+	*/
+	const vscodeEntryContent = `# ${entryResult.title}
+
+${entryResult.content}
+`
+	return vscodeEntryContent
+}
+
+export function markdownToEntry(markdown: string): any | null {
+	/*
+	Split markdown to title and content of entry.
+	*/
+	const markdownAsList = markdown.split("\n")
+	for (let i = 0; i < markdownAsList.length; i++) {
+		if (markdownAsList[i].slice(0, 2) === "# ") {
+			const entryTitle = markdownAsList[i].slice(2)
+			let entryContentList = markdownAsList.slice(i + 1)
+
+			if (entryContentList[0] === "") {
+				entryContentList = entryContentList.slice(1)
+			}
+			if (entryContentList[-1] === "") {
+				entryContentList = entryContentList.slice(0, -1)
+			}
+
+			return { title: entryTitle, content: entryContentList.join("\n") }
+		}
+	}
+	return null
+}
+
 export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string, searchResults: any) => {
 	/*
 	Generate HTML for search results.
@@ -84,26 +118,13 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 }
 
 function getNonce() {
+	/*
+	Generate nonce according with CSP best practices.
+	*/
 	let text = ""
 	const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	for (let i = 0; i < 32; i++) {
 		text += possible.charAt(Math.floor(Math.random() * possible.length))
 	}
 	return text
-}
-
-export function entryToMarkdown(entryResult): string {
-	const vscodeEntryContent = `# ${entryResult.title}
-
-${entryResult.content}
-`
-	return vscodeEntryContent
-}
-
-export function markdownToEntry(markdown: string) {
-	const markdownList = markdown.split("\n")
-	let entryTitle: string | undefined = undefined
-	let entryContent: string | undefined = undefined
-	
-	return { title: entryTitle, content: entryContent }
 }
