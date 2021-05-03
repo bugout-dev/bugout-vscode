@@ -13,7 +13,7 @@
   ],
   "description": "Bugout VSCode extension",
   "publisher": "Bugout",
-  "icon": "resources/logo.png",
+  "icon": "https://github.com/bugout-dev/bugout-vscode/raw/master/resources/logo.png",
   "main": "./dist/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run package",
