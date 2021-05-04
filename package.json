@@ -51,7 +51,7 @@
         {
           "id": "bugout-explorer",
           "title": "Bugout Explorer",
-          "icon": "resources/logo.svg"
+          "icon": "https://github.com/bugout-dev/bugout-vscode/raw/master/resources/logo.svg"
         }
       ]
     },
@@ -98,8 +98,8 @@
         "command": "bugoutView.refresh",
         "title": "Refresh",
         "icon": {
-          "light": "resources/light/refresh.svg",
-          "dark": "resources/dark/refresh.svg"
+          "light": "https://github.com/bugout-dev/bugout-vscode/raw/master/resources/light/refresh.svg",
+          "dark": "https://github.com/bugout-dev/bugout-vscode/raw/master/resources/dark/refresh.svg"
         }
       },
       {
