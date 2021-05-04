@@ -97,6 +97,10 @@
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
         }
+      },
+      {
+        "command": "extension.bugoutDirectSearch",
+        "title": "Bugout direct search for journal query"
       }
     ],
     "views": {

@@ -1,7 +1,7 @@
 /*
-TODO(kompotkot): Revome hardcoded colors, move to script.
+TODO(kompotkot): Remove hardcoded colors, move to script.
 */
-#journal-search {
+#bugout-journal-search {
 	margin-top: 1rem;
 	-webkit-box-align: center;
 	align-items: center;
@@ -20,12 +20,12 @@ TODO(kompotkot): Revome hardcoded colors, move to script.
 	background:transparent;
 }
 
-.titles {
+.bugout-titles {
     display: flex;
     -webkit-box-align: center;
 }
 
-.entry-title {
+.bugout-entry-title {
 	outline: 0px;
 	text-align: inherit;
 	border-radius: 0.375rem;
@@ -38,7 +38,7 @@ TODO(kompotkot): Revome hardcoded colors, move to script.
 	padding: 0px;
 }
 
-.edit-button {
+.bugout-edit-button {
     display: inline-flex;
     appearance: none;
     -webkit-box-align: center;
@@ -63,7 +63,7 @@ TODO(kompotkot): Revome hardcoded colors, move to script.
     border: 1px solid;
 }
 
-.entry-tag {
+.bugout-entry-tag {
     display: inline-flex;
     vertical-align: top;
     -webkit-box-align: center;
@@ -77,14 +77,16 @@ TODO(kompotkot): Revome hardcoded colors, move to script.
     min-width: 1.5rem;
     font-size: 0.875rem;
     border-radius: 0.375rem;
+    border-style: solid;
+    border: 1px solid;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    box-shadow: 0px 0px 1px 1px;
+    /* box-shadow: 0px 0px 1px 1px; */
     transition: all 0.1s ease 0s;
     z-index: 1;
 }
 
-.entry-markdown {
+.bugout-entry-markdown {
     display: block;
     border-radius: 0.375rem;
     background-color: rgb(0 0 0 / 5%);

@@ -56,18 +56,18 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 		let entryId = entryUrlList[entryUrlList.length - 1]
 		entry.tags.forEach((tag: string) => {
 			tagsBlock += `
-<p class="entry-tag">${tag}</p>
+<p class="bugout-entry-tag">${tag}</p>
 `
 		})
 
 		let entryTitleP = `
 <div>
-<div class="titles">
-	<h1 class="entry-title">${entry.title}</h1>
-	<input type="button" class="edit-button" value="Edit" data-journal="${journalId}" data-entry="${entryId}">
+<div class="bugout-titles">
+	<h1 class="bugout-entry-title">${entry.title}</h1>
+	<input type="button" class="bugout-edit-button" value="Edit" data-journal="${journalId}" data-entry="${entryId}">
 </div>
 <span>${tagsBlock}</span>
-<span class="entry-markdown">${converter.makeHtml(entry.content)}</span>
+<span class="bugout-entry-markdown">${converter.makeHtml(entry.content)}</span>
 <br>
 <hr class="solid">
 <br>
@@ -98,27 +98,30 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 		<title>Bugout Panel</title>
 	</head>
 	<body>
-		<div class="header">
-			<input placeholder="Entries search" type="search" name="q" id="journal-search" data-journal="${journalId}">
+		<div class="bugout-header">
+			<input placeholder="Entries search" type="search" name="q" id="bugout-journal-search" data-journal="${journalId}">
         </div>
 		<br>
 		<div id="entries">${entriesBlocks}</div>
 		
 		<script nonce="${nonce}">
 			// Rewrite styles with dynamic values
-			let inputs = document.getElementsByTagName("input");
-			Array.from(inputs, input => {
-				input.style.color = "${colorizeAsThemeOpposite}";
-			})
-
-			let journalSearchBar = document.getElementById("journal-search");
-			journalSearchBar.style.borderColor = "${colorizeAsThemeOpposite}";
-
-			let tags = document.getElementsByTagName("entry-tag");
-			Array.from(tags, tag => {
-				tag.style.box-shadow = "${colorizeAsThemeOpposite}";
-			})
-
+			const bugoutJournalSearchBar = document.getElementById("bugout-journal-search");
+			bugoutJournalSearchBar.style.borderColor = "${colorizeAsThemeOpposite}";
+			bugoutJournalSearchBar.style.color = "${colorizeAsThemeOpposite}";
+			
+			const bugoutJournalTags = document.getElementsByClassName("bugout-entry-tag");
+			if (bugoutJournalTags.length > 0) {
+				Array.from(bugoutJournalTags, tag => {
+					tag.style.color = "${colorizeAsThemeOpposite}";
+				})
+			}
+			const bugoutEntryEditButtons = document.getElementsByClassName("bugout-edit-button");
+			if (bugoutEntryEditButtons.length > 0) {
+				Array.from(bugoutEntryEditButtons, button => {
+					button.style.color = "${colorizeAsThemeOpposite}";
+				})
+			}
 		</script>
 	</body>
 </html>
