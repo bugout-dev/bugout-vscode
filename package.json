@@ -51,7 +51,7 @@
         {
           "id": "bugout-explorer",
           "title": "Bugout Explorer",
-          "icon": "https://github.com/bugout-dev/bugout-vscode/raw/master/resources/logo.svg"
+          "icon": "resources/logo.svg"
         }
       ]
     },
@@ -69,7 +69,7 @@
           "scope": "window",
           "markdownDescription": "Bugout API url for journal access."
         },
-        "Bugout.Journal": {
+        "Bugout.CrashReportsJournal": {
           "type": "string",
           "scope": "window",
           "markdownDescription": "Your journal ID for Exceptions search."
@@ -98,8 +98,8 @@
         "command": "bugoutView.refresh",
         "title": "Refresh",
         "icon": {
-          "light": "https://github.com/bugout-dev/bugout-vscode/raw/master/resources/light/refresh.svg",
-          "dark": "https://github.com/bugout-dev/bugout-vscode/raw/master/resources/dark/refresh.svg"
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
         }
       },
       {
