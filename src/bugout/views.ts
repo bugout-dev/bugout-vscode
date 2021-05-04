@@ -54,10 +54,10 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 	// Generate entries block
 	const converter = new Converter()
 	let entriesBlocks: string = ``
-	let tagsBlock: string = ``
 	searchResults.results.forEach((entry: any) => {
 		let entryUrlList = entry.entry_url.split("/")
 		let entryId = entryUrlList[entryUrlList.length - 1]
+		let tagsBlock: string = ``
 		entry.tags.forEach((tag: string) => {
 			tagsBlock += `
 <p class="bugout-entry-tag">${tag}</p>

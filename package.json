@@ -49,6 +49,7 @@
     "viewsContainers": {
       "activitybar": [
         {
+          "key": "ctrl+alt+b",
           "id": "bugout-explorer",
           "title": "Bugout Explorer",
           "icon": "resources/logo.svg"
@@ -112,13 +113,6 @@
         {
           "id": "bugoutView",
           "name": "Bugout Base",
-          "contextualTitle": "Journals Explorer"
-        }
-      ],
-      "explorer": [
-        {
-          "id": "journalsView",
-          "name": "Journals",
           "contextualTitle": "Journals Explorer"
         }
       ]
