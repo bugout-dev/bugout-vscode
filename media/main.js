@@ -13,6 +13,7 @@ function searchJournal(journalSearchInput) {
 		data: { q: journalSearchInput.value, journalId: journalSearchInput.dataset.journal }
 	})
 }
+
 function editEntry(editButton) {
 	/*
     Process edit entry button, open new windows with markdown editor
@@ -27,15 +28,31 @@ function editEntry(editButton) {
 	})
 }
 
+function createEntry(createButton) {
+	/*
+    Process create new entry button, open new windows with markdown editor.
+    */
+	vscode.postMessage({
+		command: "createEntry",
+		data: { journalId: createButton.dataset.journal }
+	})
+}
+
 window.onload = () => {
-	let journalSearchInput = document.getElementById("bugout-journal-search")
+	const journalSearchInput = document.getElementById("bugout-journal-search")
 	journalSearchInput.addEventListener("keypress", (event) => {
 		if (event.key === "Enter") {
 			event.preventDefault()
 			searchJournal(journalSearchInput)
 		}
 	})
-	let editEntryButtons = document.getElementsByClassName("bugout-edit-button")
+
+	const createEntryButton = document.getElementById("bugout-create-button")
+	createEntryButton.addEventListener("click", () => {
+		createEntry(createEntryButton)
+	})
+
+	const editEntryButtons = document.getElementsByClassName("bugout-edit-button")
 	Array.from(editEntryButtons, (editButton) => {
 		editButton.addEventListener("click", () => {
 			editEntry(editButton)

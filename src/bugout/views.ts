@@ -1,13 +1,15 @@
 import { Webview, workspace, Uri } from "vscode"
 import { Converter } from "showdown"
 
-export function entryToMarkdown(entryResult): string {
+const entryTitleContentSeparator = "<!-- Bugout title/content separator -->"
+
+export function entryToMarkdown(entryTitle: string, entryContent: string): string {
 	/*
 	Convert entry to markdown preview.
 	*/
-	const vscodeEntryContent = `# ${entryResult.title}
-
-${entryResult.content}
+	const vscodeEntryContent = `# ${entryTitle}
+${entryTitleContentSeparator}
+${entryContent}
 `
 	return vscodeEntryContent
 }
@@ -17,22 +19,24 @@ export function markdownToEntry(markdown: string): any | null {
 	Split markdown to title and content of entry.
 	*/
 	const markdownAsList = markdown.split("\n")
+	let entryTitleContentSeparatorPosition: number | undefined
+
 	for (let i = 0; i < markdownAsList.length; i++) {
-		if (markdownAsList[i].slice(0, 2) === "# ") {
-			const entryTitle = markdownAsList[i].slice(2)
-			let entryContentList = markdownAsList.slice(i + 1)
-
-			if (entryContentList[0] === "") {
-				entryContentList = entryContentList.slice(1)
-			}
-			if (entryContentList[-1] === "") {
-				entryContentList = entryContentList.slice(0, -1)
-			}
-
-			return { title: entryTitle, content: entryContentList.join("\n") }
+		if (markdownAsList[i].includes(entryTitleContentSeparator)) {
+			entryTitleContentSeparatorPosition = i
 		}
 	}
-	return null
+	if (entryTitleContentSeparatorPosition === undefined) {
+		return null
+	}
+	let entryTitle = markdownAsList.slice(0, entryTitleContentSeparatorPosition).join("\n")
+	let entryContent = markdownAsList.slice(entryTitleContentSeparatorPosition + 1).join("\n")
+
+	if (entryTitle.startsWith("# ")) {
+		entryTitle = entryTitle.slice(2)
+	}
+
+	return { title: entryTitle, content: entryContent }
 }
 
 export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string, searchResults: any) => {
@@ -98,8 +102,9 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 		<title>Bugout Panel</title>
 	</head>
 	<body>
-		<div class="bugout-header">
+		<div id="bugout-header">
 			<input placeholder="Entries search" type="search" name="q" id="bugout-journal-search" data-journal="${journalId}">
+			<input type="button" id="bugout-create-button" value="Create new entry" data-journal="${journalId}">
         </div>
 		<br>
 		<div id="entries">${entriesBlocks}</div>
@@ -109,6 +114,10 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 			const bugoutJournalSearchBar = document.getElementById("bugout-journal-search");
 			bugoutJournalSearchBar.style.borderColor = "${colorizeAsThemeOpposite}";
 			bugoutJournalSearchBar.style.color = "${colorizeAsThemeOpposite}";
+
+			const bugoutCreateEntryButton = document.getElementById("bugout-create-button");
+			bugoutCreateEntryButton.style.borderColor = "${colorizeAsThemeOpposite}";
+			bugoutCreateEntryButton.style.color = "${colorizeAsThemeOpposite}";
 			
 			const bugoutJournalTags = document.getElementsByClassName("bugout-entry-tag");
 			if (bugoutJournalTags.length > 0) {

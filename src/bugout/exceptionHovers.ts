@@ -12,7 +12,7 @@ export async function receiveHumbugExceptions(): Promise<string[]> {
 	let exceptions: string[] = []
 
 	if (bugoutHumbugJournalId) {
-		const errorsSearchResults = await bugoutGetSearchResults(bugoutHumbugJournalId, "#type:error")
+		const errorsSearchResults = await bugoutGetSearchResults(bugoutHumbugJournalId, "tag:type:error")
 		errorsSearchResults.results.forEach((journal) => {
 			journal.tags.forEach((tag: string) => {
 				if (tag.startsWith("error:")) {

@@ -45,6 +45,21 @@ export async function bugoutGetJournalEntry(journalId: string, entryId: string) 
 	return result.data
 }
 
+export async function bugoutCreateJournalEntry(journalId: string, entryData) {
+	const params = {
+		headers: {
+			Authorization: `Bearer ${bugoutAccessToken}`
+		}
+	}
+	const payload = {
+		title: entryData.title,
+		content: entryData.content,
+		context_type: "vscode"
+	}
+	const result = await axios.post(`${bugoutSpireUrl}/journals/${journalId}/entries`, payload, params)
+	return result.data
+}
+
 export async function bugoutUpdateJournalEntry(journalId: string, entryId: string, entryData) {
 	const params = {
 		headers: {

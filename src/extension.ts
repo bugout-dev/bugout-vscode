@@ -35,17 +35,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 	// TODO(kompotkot): Rewrite this to CustomTextEditor
 	const entryProvider = new EntryDocumentContentProvider()
 	vscode.workspace.registerTextDocumentContentProvider(myScheme, entryProvider)
-	vscode.commands.registerCommand("Bugout.editEntry", async (entryResult) => {
-		vscode.window.showWarningMessage(
-			`The entry should start with a title: "# ${entryResult.title.slice(0, 6)}.." followed by the content`
-		)
-		await entryProvider.bugoutEditEntry(entryResult)
+	vscode.commands.registerCommand("Bugout.createEntry", async (journalId: string) => {
+		await entryProvider.bugoutCreateEntry(journalId)
 	})
+	vscode.commands.registerCommand(
+		"Bugout.editEntry",
+		async (journalId: string, entryId: string, entryTitle: string, entryContent: string) => {
+			await entryProvider.bugoutEditEntry(journalId, entryId, entryTitle, entryContent)
+		}
+	)
 
 	// Exceptions search Hover
 	if (bugoutHumbugJournalId) {
+		// TODO(kompotkot): Ask user to reload editor and
+		// manage loading huge humbug journal
 		const exceptions = await receiveHumbugExceptions()
-		const supportedLanguages = ["python", "typescript", "javascript"]
+		const supportedLanguages = ["python", "typescript", "javascript", "go"]
 		supportedLanguages.forEach((language) => {
 			vscode.languages.registerHoverProvider(
 				{ language: language },
