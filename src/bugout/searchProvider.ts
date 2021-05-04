@@ -35,7 +35,6 @@ export class BugoutSearchResultsProvider {
 
 		this._panel.webview.onDidReceiveMessage(
 			async (message) => {
-				console.log(message.command)
 				switch (message.command) {
 					case "searchButton":
 						await BugoutSearchResultsProvider.searchQuery(
@@ -46,14 +45,13 @@ export class BugoutSearchResultsProvider {
 						return
 					case "editEntry":
 						const entryResult = await bugoutGetJournalEntry(message.data.journalId, message.data.entryId)
-						const entryTitle = entryResult.title
-						const entryContent = entryResult.content
 						vscode.commands.executeCommand(
 							"Bugout.editEntry",
 							message.data.journalId,
 							message.data.entryId,
-							entryTitle,
-							entryContent
+							entryResult.title,
+							entryResult.content,
+							entryResult.tags
 						)
 						return
 					case "createEntry":

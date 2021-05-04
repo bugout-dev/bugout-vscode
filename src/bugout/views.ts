@@ -1,14 +1,17 @@
-import { Webview, workspace, Uri } from "vscode"
+import { Webview, window, workspace, Uri } from "vscode"
 import { Converter } from "showdown"
 
-const entryTitleContentSeparator = "<!-- Bugout title/content separator -->"
+const entryTitleTagsSeparator = "<!-- Bugout title/tags separator -->"
+const entryTagsContentSeparator = "<!-- Bugout tags/content separator -->"
 
-export function entryToMarkdown(entryTitle: string, entryContent: string): string {
+export function entryToMarkdown(entryTitle: string, entryContent: string, entryTags: string[]): string {
 	/*
 	Convert entry to markdown preview.
 	*/
 	const vscodeEntryContent = `# ${entryTitle}
-${entryTitleContentSeparator}
+${entryTitleTagsSeparator}
+> ${entryTags.join(", ")}
+${entryTagsContentSeparator}
 ${entryContent}
 `
 	return vscodeEntryContent
@@ -19,24 +22,38 @@ export function markdownToEntry(markdown: string): any | null {
 	Split markdown to title and content of entry.
 	*/
 	const markdownAsList = markdown.split("\n")
-	let entryTitleContentSeparatorPosition: number | undefined
+	let entryTitleTagsSeparatorPosition: number | undefined
+	let entryTagsContentSeparatorPosition: number | undefined
 
 	for (let i = 0; i < markdownAsList.length; i++) {
-		if (markdownAsList[i].includes(entryTitleContentSeparator)) {
-			entryTitleContentSeparatorPosition = i
+		if (markdownAsList[i].includes(entryTitleTagsSeparator)) {
+			entryTitleTagsSeparatorPosition = i
+		}
+		if (markdownAsList[i].includes(entryTagsContentSeparator)) {
+			entryTagsContentSeparatorPosition = i
 		}
 	}
-	if (entryTitleContentSeparatorPosition === undefined) {
+	if (entryTitleTagsSeparatorPosition === undefined || entryTagsContentSeparatorPosition === undefined) {
+		window.showWarningMessage("Unable to parse entry, please add title, tags and content separators back")
 		return null
 	}
-	let entryTitle = markdownAsList.slice(0, entryTitleContentSeparatorPosition).join("\n")
-	let entryContent = markdownAsList.slice(entryTitleContentSeparatorPosition + 1).join("\n")
+	let entryTitle = markdownAsList.slice(0, entryTitleTagsSeparatorPosition).join("\n")
+	let entryTagsString = markdownAsList
+		.slice(entryTitleTagsSeparatorPosition + 1, entryTagsContentSeparatorPosition)
+		.join("\n")
+		.split(" ")
+		.join("")
+	let entryContent = markdownAsList.slice(entryTagsContentSeparatorPosition + 1).join("\n")
 
 	if (entryTitle.startsWith("# ")) {
 		entryTitle = entryTitle.slice(2)
 	}
+	if (entryTagsString.startsWith(">")) {
+		entryTagsString = entryTagsString.slice(1)
+	}
+	let entryTags = entryTagsString.split(",")
 
-	return { title: entryTitle, content: entryContent }
+	return { title: entryTitle, content: entryContent, tags: entryTags }
 }
 
 export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string, searchResults: any) => {
