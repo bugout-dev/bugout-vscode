@@ -49,7 +49,6 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "key": "ctrl+alt+b",
           "id": "bugout-explorer",
           "title": "Bugout Explorer",
           "icon": "resources/logo.svg"
