@@ -1,7 +1,7 @@
 {
   "name": "Bugout",
   "displayName": "Bugout",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "engines": {
     "vscode": "^1.55.0"
   },
@@ -112,13 +112,6 @@
         {
           "id": "bugoutView",
           "name": "Bugout Base",
-          "contextualTitle": "Journals Explorer"
-        }
-      ],
-      "explorer": [
-        {
-          "id": "journalsView",
-          "name": "Journals",
           "contextualTitle": "Journals Explorer"
         }
       ]

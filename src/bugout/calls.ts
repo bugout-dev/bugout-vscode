@@ -69,8 +69,12 @@ export async function bugoutUpdateJournalEntry(journalId: string, entryId: strin
 	const payload = {
 		title: entryData.title,
 		content: entryData.content,
-		context_type: "vscode"
+		tags: entryData.tags
 	}
-	const result = await axios.put(`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}`, payload, params)
+	const result = await axios.put(
+		`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}?tags_action=replace`,
+		payload,
+		params
+	)
 	return result.data
 }

@@ -40,8 +40,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 	})
 	vscode.commands.registerCommand(
 		"Bugout.editEntry",
-		async (journalId: string, entryId: string, entryTitle: string, entryContent: string) => {
-			await entryProvider.bugoutEditEntry(journalId, entryId, entryTitle, entryContent)
+		async (journalId: string, entryId: string, entryTitle: string, entryContent: string, entryTags: string[]) => {
+			await entryProvider.bugoutEditEntry(journalId, entryId, entryTitle, entryContent, entryTags)
 		}
 	)
 
