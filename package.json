@@ -61,7 +61,7 @@
         "Bugout.AccessToken": {
           "type": "string",
           "scope": "window",
-          "markdownDescription": "Your personal access token. It can be found at your [Bugout account](https://bugout.dev/account/tokens) page."
+          "markdownDescription": "Your personal access token. It can be found at your [Bugout account](https://bugout.dev/account/tokens) page.\nVSCode reload required."
         },
         "Bugout.Api.endpoint": {
           "type": "string",
