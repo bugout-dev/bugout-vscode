@@ -94,10 +94,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 				const updatedEntry = await bugoutUpdateJournalEntry(journalId, entryId, entryUpdatedData)
 				if (updatedEntry.title === entryUpdatedData.title) {
 					vscode.window.showInformationMessage(
-						`Entry "${entryUpdatedData.title.slice(
-							0,
-							10
-						)}.." was successfully updated, you can safely close the window.`
+						`[Entry](https://bugout.dev/app/personal/${journalId}/entries/${entryId}) was successfully updated, you can safely close the window.`
 					)
 				}
 			}

@@ -62,7 +62,6 @@ export async function bugoutCreateJournalEntry(journalId: string, entryData) {
 
 export async function bugoutUpdateJournalEntry(journalId: string, entryId: string, entryData) {
 	const params = {
-		tags_action: "replace",
 		headers: {
 			Authorization: `Bearer ${bugoutAccessToken}`
 		}
@@ -72,6 +71,10 @@ export async function bugoutUpdateJournalEntry(journalId: string, entryId: strin
 		content: entryData.content,
 		tags: entryData.tags
 	}
-	const result = await axios.put(`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}`, payload, params)
+	const result = await axios.put(
+		`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}?tags_action=replace`,
+		payload,
+		params
+	)
 	return result.data
 }
