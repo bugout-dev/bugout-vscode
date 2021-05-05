@@ -71,7 +71,7 @@ In your user or workspace settings in VSCode (`Ctrl + ,` on Windows or Linux, `C
 search for `Bugout`, and add the copied journal ID under the `Bugout: Crash Reports Journal`
 setting.
 
-**Changing Bugout settings requires restart of the VSCode application**
+**Changing Bugout settings requires restart of VSCode application**
 
 ## More information
 
