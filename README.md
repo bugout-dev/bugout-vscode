@@ -13,11 +13,19 @@ Supported languages: `Python`, `Javascript` and `Go`. Let us know what [your fav
 ### How many users have experienced an error?
 
 You can use the Bugout VSCode extension to see how many users have experienced a given error or
-exception in your code base. Hover over the error to get additional information about it.Follow by link `Details ->` 
-to view more information about each error, including the stack trace. Choose journal you want to add entry, create or modify existing record.
+exception in your code base. 
+
+Hover over the error to get additional information about it.
+
+![Selected exception in code](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-vscode-hover.png)
+
+Follow by link `Details ->` to view more information about each error, including the stack trace. 
+
+![Selected exception in code](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-vscode-exception-traceback.png)
+
 You can also search the crash report journal to get specific exceptions.
 
-![Selected exception in code](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-vscode-hover-exception-search.gif)
+![Selected exception in code](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-vscode-search-tag.png)
 
 ### Edit entries in your personal knowledgebase
 
