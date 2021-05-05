@@ -96,7 +96,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 					vscode.window.showInformationMessage(
 						`Entry "${entryUpdatedData.title.slice(
 							0,
-							6
+							10
 						)}.." was successfully updated, you can safely close the window.`
 					)
 				}

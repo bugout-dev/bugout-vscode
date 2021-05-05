@@ -62,6 +62,7 @@ export async function bugoutCreateJournalEntry(journalId: string, entryData) {
 
 export async function bugoutUpdateJournalEntry(journalId: string, entryId: string, entryData) {
 	const params = {
+		tags_action: "replace",
 		headers: {
 			Authorization: `Bearer ${bugoutAccessToken}`
 		}
