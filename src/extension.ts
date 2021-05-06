@@ -49,22 +49,26 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 	if (bugoutHumbugJournalId) {
 		// TODO(kompotkot): Ask user to reload editor and
 		// manage loading huge humbug journal
-		const exceptions = await receiveHumbugExceptions()
-		const supportedLanguages = ["python", "typescript", "javascript", "go"]
-		supportedLanguages.forEach((language) => {
-			vscode.languages.registerHoverProvider(
-				{ language: language },
-				{
-					async provideHover(
-						document: vscode.TextDocument,
-						position: vscode.Position,
-						token: vscode.CancellationToken
-					) {
-						return await exceptionsUsabilityHover(document, position, token, exceptions)
+		try {
+			const exceptions = await receiveHumbugExceptions()
+			const supportedLanguages = ["python", "typescript", "javascript", "go"]
+			supportedLanguages.forEach((language) => {
+				vscode.languages.registerHoverProvider(
+					{ language: language },
+					{
+						async provideHover(
+							document: vscode.TextDocument,
+							position: vscode.Position,
+							token: vscode.CancellationToken
+						) {
+							return await exceptionsUsabilityHover(document, position, token, exceptions)
+						}
 					}
-				}
-			)
-		})
+				)
+			})
+		} catch {
+			console.log("Provided token does not have access to this Humbug journal")
+		}
 	}
 }
 
