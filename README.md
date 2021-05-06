@@ -55,12 +55,12 @@ Paste your access token into the `Bugout: Access Token` setting and click your m
 
 ## Improve security
 
-It is considered bad practice to store the tokens and passwords in the VSCode settings. If you require a high level of security, add the token into your user's environment variables, in which case the token will be overwritten from it. 
+It is considered bad practice to store the tokens and passwords in the VSCode settings. If you require a high level of security, add the token into your user's environment variables and left `Bugout: Access Token` in VSCode empty, in which case the token will be overwritten from it. 
 
 ### For Linux and Mac
 
 ```bash
-echo 'export BUGOUT_ACCESS_TOKEN="737bd74c-ae9e-4ab4-9b85-22e93e96065a"' >> ~/.bashrc
+echo 'export BUGOUT_ACCESS_TOKEN="<your_bugout_token>"' >> ~/.bashrc
 ```
 
 If you are using `.zsh` replace `.bashrc` to `.zshrc`.
@@ -70,7 +70,7 @@ If you are using `.zsh` replace `.bashrc` to `.zshrc`.
 ### For Windows
 
 ```powershell
-[System.Environment]::SetEnvironmentVariable('BUGOUT_ACCESS_TOKEN', '737bd74c-ae9e-4ab4-9b85-22e93e96065a', [System.EnvironmentVariableTarget]::User)
+[System.Environment]::SetEnvironmentVariable('BUGOUT_ACCESS_TOKEN', '<your_bugout_token>', [System.EnvironmentVariableTarget]::User)
 ```
 
 ![Add environment variable at Windows](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-add-var-win.png)
