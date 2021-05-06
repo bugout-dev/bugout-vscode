@@ -53,6 +53,29 @@ Paste your access token into the `Bugout: Access Token` setting and click your m
 
 ![New entry in journal](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-personal-entry-from-vscode.png)
 
+## Improve security
+
+It is considered bad practice to store the tokens and passwords in the VSCode settings. If you require a high level of security, add the token into your user's environment variables, in which case the token will be overwritten from it. 
+
+### Linux and Mac
+
+```bash
+echo 'export BUGOUT_ACCESS_TOKEN="737bd74c-ae9e-4ab4-9b85-22e93e96065a"' >> ~/.bashrc
+```
+
+If you are using `.zsh` replace `.bashrc` to `.zshrc`.
+
+![Add environment variable at Linux](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-add-var.png)
+
+### Improve security at Windows
+
+```powershell
+[System.Environment]::SetEnvironmentVariable('BUGOUT_ACCESS_TOKEN', '737bd74c-ae9e-4ab4-9b85-22e93e96065a', [System.EnvironmentVariableTarget]::User)
+```
+
+![Add environment variable at Windows](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-add-var-win.png)
+
+
 ### Your crash reports journal
 
 To view crash report information in VSCode, you will need to:
