@@ -70,10 +70,10 @@ If you are using `.zsh` replace `.bashrc` to `.zshrc`.
 ### Improve security at Windows
 
 ```powershell
-
+[System.Environment]::SetEnvironmentVariable('BUGOUT_ACCESS_TOKEN', '737bd74c-ae9e-4ab4-9b85-22e93e96065a', [System.EnvironmentVariableTarget]::User)
 ```
 
-![Add environment variable at Windows]()
+![Add environment variable at Windows](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-add-var-win.png)
 
 
 ### Your crash reports journal

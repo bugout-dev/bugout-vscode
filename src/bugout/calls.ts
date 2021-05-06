@@ -3,7 +3,6 @@ import axios from "axios"
 import { bugoutSpireUrl, getBugoutAccessToken } from "./settings"
 
 const token = getBugoutAccessToken()
-console.log(token)
 
 export async function bugoutGetSearchResults(journalId: string, q: string, content: boolean = false) {
 	let params = {
