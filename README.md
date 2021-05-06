@@ -55,7 +55,7 @@ Paste your access token into the `Bugout: Access Token` setting and click your m
 
 ## Improve security
 
-It is considered bad practice to store the tokens and passwords in the VSCode settings. If you require a high level of security, add the token into your user's environment variables and left `Bugout: Access Token` in VSCode empty, in which case the token will be overwritten from it. 
+It is considered bad practice to store the tokens and passwords in the VSCode settings. If you require a high level of security, add the token into your user's environment variables and leave `Bugout: Access Token` in VSCode empty, in which case the token will be overwritten from it. 
 
 ### For Linux and Mac
 
