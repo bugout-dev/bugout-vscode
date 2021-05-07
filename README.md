@@ -55,12 +55,14 @@ Paste your access token into the `Bugout: Access Token` setting and click your m
 
 ## Improve security
 
-It is considered bad practice to store the tokens and passwords in the VSCode settings. If you require a high level of security, add the token into your user's environment variables and leave `Bugout: Access Token` in VSCode empty, in which case the token will be overwritten from it. 
+It is considered bad practice to store the tokens and passwords in the VSCode settings. You can add the token into your user's environment variables and leave `Bugout: Access Token` with another settings in VSCode empty. **Note**: Application settings take precedence over environment variables.
 
 ### For Linux and Mac
 
 ```bash
 echo 'export BUGOUT_ACCESS_TOKEN="<your_bugout_token>"' >> ~/.bashrc
+echo 'export BUGOUT_SPIRE_URL="https://spire.bugout.dev"' >> ~/.bashrc
+echo 'export BUGOUT_HUMBUG_JOURNAL_ID="<your_crash_report_journal_id>"' >> ~/.bashrc
 ```
 
 If you are using `.zsh` replace `.bashrc` to `.zshrc`.
@@ -71,10 +73,11 @@ If you are using `.zsh` replace `.bashrc` to `.zshrc`.
 
 ```powershell
 [System.Environment]::SetEnvironmentVariable('BUGOUT_ACCESS_TOKEN', '<your_bugout_token>', [System.EnvironmentVariableTarget]::User)
+[System.Environment]::SetEnvironmentVariable('BUGOUT_SPIRE_URL', '<https://spire.bugout.dev>', [System.EnvironmentVariableTarget]::User)
+[System.Environment]::SetEnvironmentVariable('BUGOUT_HUMBUG_JOURNAL_ID', '<your_crash_report_journal_id>', [System.EnvironmentVariableTarget]::User)
 ```
 
 ![Add environment variable at Windows](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-add-var-win.png)
-
 
 ### Your crash reports journal
 
