@@ -15,7 +15,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 	onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>()
 	onDidChange = this.onDidChangeEmitter.event
 
-	public async bugoutCreateEntry(journalId: string) {
+	public async bugoutCreateEntry(accessToken: string, journalId: string) {
 		vscode.workspace.openTextDocument({ language: "markdown", content: "" }).then((doc) => {
 			vscode.window.showTextDocument(doc, { preserveFocus: true, preview: false }).then((textDoc) => {
 				textDoc.edit(async (editText) => {
@@ -30,13 +30,13 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 						tempEntryContent.tags
 					)
 					editText.insert(new vscode.Position(0, 0), entryString)
-					const createdEntry = await bugoutCreateJournalEntry(journalId, tempEntryContent)
+					const createdEntry = await bugoutCreateJournalEntry(accessToken, journalId, tempEntryContent)
 
 					vscode.workspace.onDidChangeTextDocument(async (editedDoc) => {
 						if (editedDoc.document === doc) {
 							const entryUpdatedData = markdownToEntry(editedDoc.document.getText())
 							if (entryUpdatedData) {
-								await this.updateEntryTimeout(journalId, createdEntry.id, entryUpdatedData)
+								await this.updateEntryTimeout(accessToken, journalId, createdEntry.id, entryUpdatedData)
 							}
 						}
 					})
@@ -46,6 +46,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 	}
 
 	public async bugoutEditEntry(
+		accessToken: string,
 		journalId: string,
 		entryId: string,
 		entryTitle: string,
@@ -67,7 +68,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 							// to inform user modify entry with rules
 							const entryUpdatedData = markdownToEntry(editedDoc.document.getText())
 							if (entryUpdatedData) {
-								await this.updateEntryTimeout(journalId, entryId, entryUpdatedData)
+								await this.updateEntryTimeout(accessToken, journalId, entryId, entryUpdatedData)
 							}
 						}
 					})
@@ -82,7 +83,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 		})
 	}
 
-	private async updateEntryTimeout(journalId: string, entryId: string, entryUpdatedData) {
+	private async updateEntryTimeout(accessToken: string, journalId: string, entryId: string, entryUpdatedData) {
 		/*
 		Check if since last changes passed 5 second, then send entry update to server.
 		*/
@@ -91,7 +92,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 		}
 		let timeout = setTimeout(async () => {
 			if (this.bugoutTimeoutActive !== undefined) {
-				const updatedEntry = await bugoutUpdateJournalEntry(journalId, entryId, entryUpdatedData)
+				const updatedEntry = await bugoutUpdateJournalEntry(accessToken, journalId, entryId, entryUpdatedData)
 				if (updatedEntry.title === entryUpdatedData.title) {
 					vscode.window.showInformationMessage(
 						`[Entry](https://bugout.dev/app/personal/${journalId}/entries/${entryId}) was successfully updated, you can safely close the window.`

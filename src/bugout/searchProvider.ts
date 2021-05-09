@@ -17,7 +17,7 @@ export class BugoutSearchResultsProvider {
 	private readonly _extensionUri: vscode.Uri
 	private _disposables: vscode.Disposable[] = []
 
-	private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+	private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, private _accessToken: string) {
 		this._panel = panel
 		this._extensionUri = extensionUri
 
@@ -39,12 +39,17 @@ export class BugoutSearchResultsProvider {
 					case "searchButton":
 						await BugoutSearchResultsProvider.searchQuery(
 							this._extensionUri,
+							this._accessToken,
 							message.data.journalId,
 							message.data.q
 						)
 						return
 					case "editEntry":
-						const entryResult = await bugoutGetJournalEntry(message.data.journalId, message.data.entryId)
+						const entryResult = await bugoutGetJournalEntry(
+							this._accessToken,
+							message.data.journalId,
+							message.data.entryId
+						)
 						vscode.commands.executeCommand(
 							"Bugout.editEntry",
 							message.data.journalId,
@@ -64,15 +69,15 @@ export class BugoutSearchResultsProvider {
 		)
 	}
 
-	public static async searchQuery(extensionUri: vscode.Uri, journalId: string, q: string) {
-		const searchResults = await bugoutGetSearchResults(journalId, q, true)
-		BugoutSearchResultsProvider.createOrShow(extensionUri)
+	public static async searchQuery(extensionUri: vscode.Uri, accessToken: string, journalId: string, q: string) {
+		const searchResults = await bugoutGetSearchResults(accessToken, journalId, q, true)
+		BugoutSearchResultsProvider.createOrShow(extensionUri, accessToken)
 		if (BugoutSearchResultsProvider.currentPanel) {
 			await BugoutSearchResultsProvider.currentPanel.doRefactor(searchResults, journalId)
 		}
 	}
 
-	public static createOrShow(extensionUri: vscode.Uri) {
+	public static createOrShow(extensionUri: vscode.Uri, accessToken: string) {
 		/*
 		Generate new panel or show existing one.
 		*/
@@ -93,14 +98,14 @@ export class BugoutSearchResultsProvider {
 			bugoutGetWebviewOptions(extensionUri)
 		)
 
-		BugoutSearchResultsProvider.currentPanel = new BugoutSearchResultsProvider(panel, extensionUri)
+		BugoutSearchResultsProvider.currentPanel = new BugoutSearchResultsProvider(panel, extensionUri, accessToken)
 	}
 
-	public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+	public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, accessToken: string) {
 		/*
 		Revive our panel.
 		*/
-		BugoutSearchResultsProvider.currentPanel = new BugoutSearchResultsProvider(panel, extensionUri)
+		BugoutSearchResultsProvider.currentPanel = new BugoutSearchResultsProvider(panel, extensionUri, accessToken)
 	}
 
 	public async doRefactor(searchResults: any, journalId: string) {

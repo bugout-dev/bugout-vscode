@@ -45,36 +45,13 @@ see an access token. `Keep this token secret!`
 
 ![New token](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-create-token.png)
 
-Copy that access token and go to your VSCode settings screen. You can either do this by selecting `File > Preferences > Settings` (this is `Code > Preferences > Settings` on a Mac) or by hitting `Ctrl + ,`. In the `Search settings` bar, type `bugout`.
+Copy that access token and go to your VSCode command palette `Ctrl + Shift + P` and type `Bugout: Set Access Token`, then hit Enter. Paste your access token into the prompt and hit Enter again.
 
-![Bugout settings in VS Code](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-vscode-settings.png)
+![Bugout access token in VS Code](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-set-comm-pal.png)
 
-Paste your access token into the `Bugout: Access Token` setting and click your mouse away. Any knowledge you store from VSCode is automatically synchronized with Bugout.
+Paste your access token into the `Bugout: Access Token` setting and click your mouse away, then Reload VSCode `Ctrl+ R`. Any knowledge you store from VSCode is automatically synchronized with Bugout.
 
 ![New entry in journal](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-personal-entry-from-vscode.png)
-
-## Improve security
-
-It is considered bad practice to store the tokens and passwords in the VSCode settings. If you require a high level of security, add the token into your user's environment variables and leave `Bugout: Access Token` in VSCode empty, in which case the token will be overwritten from it. 
-
-### For Linux and Mac
-
-```bash
-echo 'export BUGOUT_ACCESS_TOKEN="<your_bugout_token>"' >> ~/.bashrc
-```
-
-If you are using `.zsh` replace `.bashrc` to `.zshrc`.
-
-![Add environment variable at Linux](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-add-var.png)
-
-### For Windows
-
-```powershell
-[System.Environment]::SetEnvironmentVariable('BUGOUT_ACCESS_TOKEN', '<your_bugout_token>', [System.EnvironmentVariableTarget]::User)
-```
-
-![Add environment variable at Windows](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-add-var-win.png)
-
 
 ### Your crash reports journal
 
@@ -90,9 +67,7 @@ Once the integration is set up, copy the `Journal id`.
 
 ![Copy crash reports journal id](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-create-humbug-journal.png)
 
-In your user or workspace settings in VSCode (`Ctrl + ,` on Windows or Linux, `Cmd + ,` on Mac),
-search for `Bugout`, and add the copied journal ID under the `Bugout: Crash Reports Journal`
-setting.
+Copy that journal id and go to your VSCode command palette `Ctrl + Shift + P` and type `Bugout: Set Crash Reports Journal ID`, then hit Enter. Paste your journal id into the prompt and hit Enter again.
 
 **Changing Bugout settings requires restart of VSCode application**
 

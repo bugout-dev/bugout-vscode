@@ -1,56 +1,57 @@
 import axios from "axios"
 
-import { bugoutSpireUrl, getBugoutAccessToken } from "./settings"
-
-const token = getBugoutAccessToken()
-
-export async function bugoutGetSearchResults(journalId: string, q: string, content: boolean = false) {
+export async function bugoutGetSearchResults(
+	accessToken: string,
+	journalId: string,
+	q: string,
+	content: boolean = false
+) {
 	let params = {
 		headers: {
-			Authorization: `Bearer ${token}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const searchResult = await axios.get(
-		`${bugoutSpireUrl}/journals/${journalId}/search?q=${q}&content=${content}`,
+		`https://spire.bugout.dev/journals/${journalId}/search?q=${q}&content=${content}`,
 		params
 	)
 	return searchResult.data
 }
 
-export async function bugoutGetJournals() {
+export async function bugoutGetJournals(accessToken: string) {
 	let params = {
 		headers: {
-			Authorization: `Bearer ${token}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
-	const result = await axios.get(`${bugoutSpireUrl}/journals`, params)
+	const result = await axios.get(`https://spire.bugout.dev/journals`, params)
 	return result.data
 }
 
-export async function bugoutGetJournalEntries(journalId: string) {
+export async function bugoutGetJournalEntries(accessToken: string, journalId: string) {
 	let params = {
 		headers: {
-			Authorization: `Bearer ${token}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
-	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries`, params)
+	const result = await axios.get(`https://spire.bugout.dev/journals/${journalId}/entries`, params)
 	return result.data
 }
 
-export async function bugoutGetJournalEntry(journalId: string, entryId: string) {
+export async function bugoutGetJournalEntry(accessToken: string, journalId: string, entryId: string) {
 	let params = {
 		headers: {
-			Authorization: `Bearer ${token}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
-	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}`, params)
+	const result = await axios.get(`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}`, params)
 	return result.data
 }
 
-export async function bugoutCreateJournalEntry(journalId: string, entryData) {
+export async function bugoutCreateJournalEntry(accessToken: string, journalId: string, entryData) {
 	const params = {
 		headers: {
-			Authorization: `Bearer ${token}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const payload = {
@@ -58,14 +59,14 @@ export async function bugoutCreateJournalEntry(journalId: string, entryData) {
 		content: entryData.content,
 		context_type: "vscode"
 	}
-	const result = await axios.post(`${bugoutSpireUrl}/journals/${journalId}/entries`, payload, params)
+	const result = await axios.post(`https://spire.bugout.dev/journals/${journalId}/entries`, payload, params)
 	return result.data
 }
 
-export async function bugoutUpdateJournalEntry(journalId: string, entryId: string, entryData) {
+export async function bugoutUpdateJournalEntry(accessToken: string, journalId: string, entryId: string, entryData) {
 	const params = {
 		headers: {
-			Authorization: `Bearer ${token}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const payload = {
@@ -74,7 +75,7 @@ export async function bugoutUpdateJournalEntry(journalId: string, entryId: strin
 		tags: entryData.tags
 	}
 	const result = await axios.put(
-		`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}?tags_action=replace`,
+		`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}?tags_action=replace`,
 		payload,
 		params
 	)
