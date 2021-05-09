@@ -49,7 +49,7 @@ Copy that access token and go to your VSCode command palette `Ctrl + Shift + P` 
 
 ![Bugout access token in VS Code](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/demo-vscode-set-comm-pal.png)
 
-Paste your access token into the `Bugout: Access Token` setting and click your mouse away, then Reload VSCode `Ctrl+ R`. Any knowledge you store from VSCode is automatically synchronized with Bugout.
+Then Reload VSCode `Ctrl+ R`. Any knowledge you store from VSCode is automatically synchronized with Bugout.
 
 ![New entry in journal](https://s3.amazonaws.com/static.simiotics.com/bugout-dev-docs/bugout-personal-entry-from-vscode.png)
 
