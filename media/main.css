@@ -1,6 +1,3 @@
-/*
-TODO(kompotkot): Remove hardcoded colors, move to script.
-*/
 #bugout-header {
 	display: flex;
 	justify-content: space-between;
@@ -24,6 +21,7 @@ TODO(kompotkot): Remove hardcoded colors, move to script.
 	border: 1px solid;
 	background: transparent;
 }
+
 #bugout-create-button {
 	display: flex;
 	-webkit-box-align: center;
@@ -108,7 +106,6 @@ TODO(kompotkot): Remove hardcoded colors, move to script.
 	border: 1px solid;
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
-	/* box-shadow: 0px 0px 1px 1px; */
 	transition: all 0.1s ease 0s;
 	z-index: 1;
 }

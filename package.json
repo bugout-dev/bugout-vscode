@@ -18,7 +18,7 @@
   "scripts": {
     "vscode:prepublish": "npm run package",
     "compile": "webpack --devtool nosources-source-map --config ./webpack.config.js",
-    "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
+    "watch": "webpack --watch --devtool nosources-source-map --config ./webpack.config.js",
     "package": "webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",
     "test-watch": "tsc -watch -p ./",
@@ -58,21 +58,11 @@
     "configuration": {
       "title": "Bugout",
       "properties": {
-        "Bugout.AccessToken": {
-          "type": "string",
-          "scope": "window",
-          "markdownDescription": "Your personal access token. It can be found at your [Bugout account](https://bugout.dev/account/tokens) page.\nVSCode reload required."
-        },
         "Bugout.Api.endpoint": {
           "type": "string",
           "default": "https://spire.bugout.dev",
           "scope": "window",
           "markdownDescription": "Bugout API url for journal access."
-        },
-        "Bugout.CrashReportsJournal": {
-          "type": "string",
-          "scope": "window",
-          "markdownDescription": "Your journal ID for Exceptions search."
         }
       }
     },
@@ -86,6 +76,14 @@
       ]
     },
     "commands": [
+      {
+        "command": "Bugout.setToken",
+        "title": "Bugout: Set Access Token"
+      },
+      {
+        "command": "Bugout.setHumbugJournalId",
+        "title": "Bugout: Set Crash Reports Journal ID"
+      },
       {
         "command": "Bugout.createEntry",
         "title": "Bugout: Create entry"

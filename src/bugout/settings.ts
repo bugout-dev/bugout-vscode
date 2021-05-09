@@ -1,44 +1,57 @@
-import { workspace } from "vscode"
-import { env } from "process"
+import * as vscode from "vscode"
 
-const configuration = workspace.getConfiguration()
+const configuration = vscode.workspace.getConfiguration()
+export const bugoutSpireUrl: string | undefined = configuration.get("Bugout.Api.endpoint")
 
-function getBugoutAccessToken(): string | undefined {
-	const bugoutAccessToken: string | undefined = configuration.get("Bugout.AccessToken")
-	if (bugoutAccessToken) {
-		return bugoutAccessToken
-	}
-	const bugoutAccessTokenEnv: string | undefined = env.BUGOUT_ACCESS_TOKEN
-	if (bugoutAccessTokenEnv) {
-		return bugoutAccessTokenEnv
-	}
-	return undefined
+export type BugoutAuthData = {
+	access_token: string | undefined
+	humbug_journal_id: string | undefined
 }
 
-function getBugoutSpireUrl(): string | undefined {
-	const bugoutSpireUrl: string | undefined = configuration.get("Bugout.Api.endpoint")
-	if (bugoutSpireUrl) {
-		return bugoutSpireUrl
-	}
-	const bugoutSpireUrlEnv: string | undefined = env.BUGOUT_SPIRE_URL
-	if (bugoutSpireUrlEnv) {
-		return bugoutSpireUrlEnv
-	}
-	return "https://spire.bugout.dev"
-}
+export default class BugoutSettings {
+	private storage: vscode.SecretStorage
 
-function getBugoutHumbugJournalId(): string | undefined {
-	const bugoutHumbugJournalId: string | undefined = configuration.get("Bugout.CrashReportsJournal")
-	if (bugoutHumbugJournalId) {
-		return bugoutHumbugJournalId
-	}
-	const bugoutHumbugJournalIdEnv: string | undefined = env.BUGOUT_HUMBUG_JOURNAL_ID
-	if (bugoutHumbugJournalIdEnv) {
-		return bugoutHumbugJournalIdEnv
-	}
-	return undefined
-}
+	private static _instance: BugoutSettings
 
-export const bugoutToken = getBugoutAccessToken()
-export const bugoutSpireUrl = getBugoutSpireUrl()
-export const bugoutHumbugJournalId = getBugoutHumbugJournalId()
+	constructor(storage: vscode.SecretStorage) {
+		this.storage = storage
+	}
+
+	static init(context: vscode.ExtensionContext): void {
+		BugoutSettings._instance = new BugoutSettings(context.secrets)
+	}
+
+	static get instance(): BugoutSettings {
+		return BugoutSettings._instance
+	}
+
+	async storeAuthData(accessToken?: string, humbugJournalId?: string): Promise<void> {
+		/*
+		Update values in bugout_auth secret storage.
+		*/
+		try {
+			let authData = await this.getAuthData()
+			if (accessToken) authData.access_token = accessToken
+			if (humbugJournalId) authData.humbug_journal_id = humbugJournalId
+			this.storage.store("bugout_auth", JSON.stringify(authData))
+		} catch (err) {
+			console.log("Unable to store Bugout authentication data in Secret Storage")
+		}
+	}
+
+	async getAuthData(): Promise<BugoutAuthData> {
+		/*
+		Retrieve data from bugout_auth secret storage.
+		*/
+		let authDataString = await this.storage.get("bugout_auth")
+		if (authDataString != null) {
+			return JSON.parse(authDataString) as BugoutAuthData
+		} else {
+			const authData: BugoutAuthData = {
+				access_token: undefined,
+				humbug_journal_id: undefined
+			}
+			return authData
+		}
+	}
+}

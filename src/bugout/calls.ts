@@ -1,11 +1,16 @@
 import axios from "axios"
 
-import { bugoutSpireUrl, bugoutToken } from "./settings"
+import { bugoutSpireUrl } from "./settings"
 
-export async function bugoutGetSearchResults(journalId: string, q: string, content: boolean = false) {
+export async function bugoutGetSearchResults(
+	accessToken: string,
+	journalId: string,
+	q: string,
+	content: boolean = false
+) {
 	let params = {
 		headers: {
-			Authorization: `Bearer ${bugoutToken}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const searchResult = await axios.get(
@@ -15,40 +20,40 @@ export async function bugoutGetSearchResults(journalId: string, q: string, conte
 	return searchResult.data
 }
 
-export async function bugoutGetJournals() {
+export async function bugoutGetJournals(accessToken: string) {
 	let params = {
 		headers: {
-			Authorization: `Bearer ${bugoutToken}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const result = await axios.get(`${bugoutSpireUrl}/journals`, params)
 	return result.data
 }
 
-export async function bugoutGetJournalEntries(journalId: string) {
+export async function bugoutGetJournalEntries(accessToken: string, journalId: string) {
 	let params = {
 		headers: {
-			Authorization: `Bearer ${bugoutToken}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries`, params)
 	return result.data
 }
 
-export async function bugoutGetJournalEntry(journalId: string, entryId: string) {
+export async function bugoutGetJournalEntry(accessToken: string, journalId: string, entryId: string) {
 	let params = {
 		headers: {
-			Authorization: `Bearer ${bugoutToken}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const result = await axios.get(`${bugoutSpireUrl}/journals/${journalId}/entries/${entryId}`, params)
 	return result.data
 }
 
-export async function bugoutCreateJournalEntry(journalId: string, entryData) {
+export async function bugoutCreateJournalEntry(accessToken: string, journalId: string, entryData) {
 	const params = {
 		headers: {
-			Authorization: `Bearer ${bugoutToken}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const payload = {
@@ -60,10 +65,10 @@ export async function bugoutCreateJournalEntry(journalId: string, entryData) {
 	return result.data
 }
 
-export async function bugoutUpdateJournalEntry(journalId: string, entryId: string, entryData) {
+export async function bugoutUpdateJournalEntry(accessToken: string, journalId: string, entryId: string, entryData) {
 	const params = {
 		headers: {
-			Authorization: `Bearer ${bugoutToken}`
+			Authorization: `Bearer ${accessToken}`
 		}
 	}
 	const payload = {

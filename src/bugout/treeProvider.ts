@@ -17,7 +17,7 @@ export class BugoutTreeProvider implements vscode.TreeDataProvider<BugoutTreeIte
 	readonly onDidChangeTreeData: vscode.Event<BugoutTreeItem | undefined> = this._onDidChangeTreeData.event
 	private userJournals: any | undefined
 
-	constructor(private context: vscode.ExtensionContext) {}
+	constructor(private context: vscode.ExtensionContext, private _accessToken: string) {}
 
 	refresh(): void {
 		/*
@@ -61,8 +61,8 @@ export class BugoutTreeProvider implements vscode.TreeDataProvider<BugoutTreeIte
 		Tree Item selection.
 		Run empty search to get journal entries.
 		*/
-		const searchResults = await bugoutGetSearchResults(journal.id, "", true)
-		BugoutSearchResultsProvider.createOrShow(this.context.extensionUri)
+		const searchResults = await bugoutGetSearchResults(this._accessToken, journal.id, "", true)
+		BugoutSearchResultsProvider.createOrShow(this.context.extensionUri, this._accessToken)
 		if (BugoutSearchResultsProvider.currentPanel) {
 			await BugoutSearchResultsProvider.currentPanel.doRefactor(searchResults, journal.id)
 		}
@@ -71,10 +71,10 @@ export class BugoutTreeProvider implements vscode.TreeDataProvider<BugoutTreeIte
 	private async bugoutFetchJournals() {
 		/*
 		TODO(kompotkot): Rebuild it to init() with auto fetching journals 
-		due class initialisation
+		due class initialization
 		*/
 		// const tokenColors = getTokenColorsForTheme(themeName);
-		let userJournals = await bugoutGetJournals()
+		let userJournals = await bugoutGetJournals(this._accessToken)
 		return userJournals
 	}
 }
