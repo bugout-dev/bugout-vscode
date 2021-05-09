@@ -1,8 +1,5 @@
 import * as vscode from "vscode"
 
-const configuration = vscode.workspace.getConfiguration()
-export const bugoutSpireUrl: string | undefined = configuration.get("Bugout.Api.endpoint")
-
 export type BugoutAuthData = {
 	access_token: string | undefined
 	humbug_journal_id: string | undefined

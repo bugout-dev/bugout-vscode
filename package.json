@@ -55,17 +55,6 @@
         }
       ]
     },
-    "configuration": {
-      "title": "Bugout",
-      "properties": {
-        "Bugout.Api.endpoint": {
-          "type": "string",
-          "default": "https://spire.bugout.dev",
-          "scope": "window",
-          "markdownDescription": "Bugout API url for journal access."
-        }
-      }
-    },
     "menus": {
       "view/title": [
         {
