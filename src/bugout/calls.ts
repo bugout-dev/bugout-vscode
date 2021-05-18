@@ -1,4 +1,22 @@
 import axios from "axios"
+import * as fs from "fs"
+import * as FormData from "form-data"
+
+// const spireUrl = "https://spire.bugout.dev"
+const spireUrl = "http://localhost:7475"
+
+export async function bugoutUploadImage(accessToken: string, journalId: string, entryId: string, filePath: string) {
+	const formData = new FormData()
+	formData.append("image", fs.createReadStream(filePath))
+	let params = {
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			...formData.getHeaders()
+		}
+	}
+	const result = await axios.post(`${spireUrl}/journals/${journalId}/entries/${entryId}/image`, formData, params)
+	return result.data
+}
 
 export async function bugoutGetSearchResults(
 	accessToken: string,
@@ -11,10 +29,7 @@ export async function bugoutGetSearchResults(
 			Authorization: `Bearer ${accessToken}`
 		}
 	}
-	const searchResult = await axios.get(
-		`https://spire.bugout.dev/journals/${journalId}/search?q=${q}&content=${content}`,
-		params
-	)
+	const searchResult = await axios.get(`${spireUrl}/journals/${journalId}/search?q=${q}&content=${content}`, params)
 	return searchResult.data
 }
 
@@ -24,7 +39,7 @@ export async function bugoutGetJournals(accessToken: string) {
 			Authorization: `Bearer ${accessToken}`
 		}
 	}
-	const result = await axios.get(`https://spire.bugout.dev/journals`, params)
+	const result = await axios.get(`${spireUrl}/journals`, params)
 	return result.data
 }
 
@@ -34,7 +49,7 @@ export async function bugoutGetJournalEntries(accessToken: string, journalId: st
 			Authorization: `Bearer ${accessToken}`
 		}
 	}
-	const result = await axios.get(`https://spire.bugout.dev/journals/${journalId}/entries`, params)
+	const result = await axios.get(`${spireUrl}/journals/${journalId}/entries`, params)
 	return result.data
 }
 
@@ -44,7 +59,7 @@ export async function bugoutGetJournalEntry(accessToken: string, journalId: stri
 			Authorization: `Bearer ${accessToken}`
 		}
 	}
-	const result = await axios.get(`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}`, params)
+	const result = await axios.get(`${spireUrl}/journals/${journalId}/entries/${entryId}`, params)
 	return result.data
 }
 
@@ -59,7 +74,7 @@ export async function bugoutCreateJournalEntry(accessToken: string, journalId: s
 		content: entryData.content,
 		context_type: "vscode"
 	}
-	const result = await axios.post(`https://spire.bugout.dev/journals/${journalId}/entries`, payload, params)
+	const result = await axios.post(`${spireUrl}/journals/${journalId}/entries`, payload, params)
 	return result.data
 }
 
@@ -75,7 +90,7 @@ export async function bugoutUpdateJournalEntry(accessToken: string, journalId: s
 		tags: entryData.tags
 	}
 	const result = await axios.put(
-		`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}?tags_action=replace`,
+		`${spireUrl}/journals/${journalId}/entries/${entryId}?tags_action=replace`,
 		payload,
 		params
 	)

@@ -1,4 +1,51 @@
 import * as vscode from "vscode"
+import * as path from "path"
+import * as process from "process"
+import * as fs from "fs"
+
+export let rootPath: string | undefined
+
+export function getPlatform(): string {
+	if (process.platform === "win32") {
+		return "win32"
+	}
+	if (process.platform === "linux") {
+		return "linux"
+	}
+	throw new Error(`Sorry, the platform '${process.platform}' is not supported by Bugout.`)
+}
+
+export async function setTempRootPath(extensionContext: vscode.ExtensionContext): Promise<void> {
+	/*
+	Create folder: temp in bugout.bugout
+	*/
+	rootPath =
+		extensionContext.extensionMode === vscode.ExtensionMode.Test
+			? path.join(__dirname, "..", "..", "temp")
+			: path.join(extensionContext.globalStorageUri.fsPath, "temp")
+
+	fs.rmdirSync(rootPath, { recursive: true })
+	await fs.promises.mkdir(rootPath, { recursive: true })
+}
+
+export function cleanTempRootPath(): void {
+	if (rootPath) {
+		try {
+			fs.rmdirSync(rootPath, { recursive: true })
+		} catch (err) {
+			// Unable to clean temp path.
+		}
+	}
+}
+
+export async function removeTempEntry(entryPath: string) {
+	await fs.unlink(entryPath, (err) => {
+		if (err) {
+			console.log("Unable to remove entry temp file")
+			return
+		}
+	})
+}
 
 export type BugoutAuthData = {
 	access_token: string | undefined
