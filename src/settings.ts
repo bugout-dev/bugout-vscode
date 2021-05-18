@@ -1,7 +1,10 @@
 import * as vscode from "vscode"
+import BugoutClient from "@bugout/bugout-js"
 import * as path from "path"
 import * as process from "process"
 import * as fs from "fs"
+
+export const bugoutClient = new BugoutClient()
 
 export let rootPath: string | undefined
 

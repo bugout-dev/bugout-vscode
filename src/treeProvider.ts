@@ -4,8 +4,8 @@ Represents tree view of Bugout VSCode side panel.
 import * as vscode from "vscode"
 import * as path from "path"
 
-import { bugoutGetJournals, bugoutGetSearchResults } from "./calls"
 import { BugoutSearchResultsProvider } from "./searchProvider"
+import { bugoutClient } from "./settings"
 
 export class BugoutTreeProvider implements vscode.TreeDataProvider<BugoutTreeItem> {
 	/*
@@ -61,7 +61,7 @@ export class BugoutTreeProvider implements vscode.TreeDataProvider<BugoutTreeIte
 		Tree Item selection.
 		Run empty search to get journal entries.
 		*/
-		const searchResults = await bugoutGetSearchResults(this._accessToken, journal.id, "", true)
+		const searchResults = await bugoutClient.search(this._accessToken, journal.id, "", [], 100, 0, true)
 		BugoutSearchResultsProvider.createOrShow(this.context.extensionUri, this._accessToken)
 		if (BugoutSearchResultsProvider.currentPanel) {
 			await BugoutSearchResultsProvider.currentPanel.doRefactor(searchResults, journal.id)
@@ -74,7 +74,7 @@ export class BugoutTreeProvider implements vscode.TreeDataProvider<BugoutTreeIte
 		due class initialization
 		*/
 		// const tokenColors = getTokenColorsForTheme(themeName);
-		let userJournals = await bugoutGetJournals(this._accessToken)
+		const userJournals = await bugoutClient.listJournals(this._accessToken)
 		return userJournals
 	}
 }

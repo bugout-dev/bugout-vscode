@@ -1,11 +1,10 @@
 import * as vscode from "vscode"
 
-import { exceptionsUsabilityHover, receiveHumbugExceptions } from "./bugout/exceptionHovers"
-import { EntryDocumentContentProvider } from "./bugout/entryProvider"
-import { BugoutSearchResultsProvider, bugoutGetWebviewOptions } from "./bugout/searchProvider"
-import { BugoutTreeProvider } from "./bugout/treeProvider"
-import BugoutSettings, { setTempRootPath, rootPath, cleanTempRootPath } from "./bugout/settings"
-import { bugoutUploadImage } from "./bugout/calls"
+import { exceptionsUsabilityHover, receiveHumbugExceptions } from "./exceptionHovers"
+import { EntryDocumentContentProvider, uploadImage } from "./entryProvider"
+import { BugoutSearchResultsProvider, bugoutGetWebviewOptions } from "./searchProvider"
+import { BugoutTreeProvider } from "./treeProvider"
+import BugoutSettings, { setTempRootPath, rootPath, cleanTempRootPath } from "./settings"
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 	const myScheme = "bugout"
@@ -80,29 +79,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		)
 	}
 	vscode.commands.registerCommand("Bugout.uploadImage", async () => {
-		const activeEntry = vscode.window.activeTextEditor
-		if (activeEntry) {
-			const path = activeEntry.document.uri.path
-			if (path && rootPath && accessToken) {
-				if (path.startsWith(rootPath)) {
-					const pathList = path.split("/")
-					const journalId = pathList[pathList.length - 3]
-					const entryIdList = pathList[pathList.length - 1].split(".")
-					const entryId = entryIdList[0]
-
-					const imagePath = await vscode.window.showInputBox()
-					if (imagePath) {
-						const imageUploadResponse = await bugoutUploadImage(accessToken, journalId, entryId, imagePath)
-						const imageLink = `![image](${imageUploadResponse.s3_presigned_url})`
-						// TODO(kompotkot): Calculate normal position
-						activeEntry.edit((editText) => {
-							editText.insert(new vscode.Position(20, 0), imageLink)
-						})
-					}
-				}
-			}
-		} else {
-			vscode.window.showWarningMessage("Uploading image available only from active entry window.")
+		if (rootPath && accessToken) {
+			await uploadImage(rootPath, accessToken)
 		}
 	})
 

@@ -2,8 +2,12 @@
 Represents markdown document of Bugout entry.
 */
 import * as vscode from "vscode"
+import { BugoutTypes } from "@bugout/bugout-js"
+import axios from "axios"
+import * as fs from "fs"
+import * as FormData from "form-data"
 
-import { bugoutUpdateJournalEntry, bugoutCreateJournalEntry } from "./calls"
+import { bugoutClient } from "./settings"
 import { entryToMarkdown, markdownToEntry } from "./views"
 
 export class EntryDocumentContentProvider implements vscode.TextDocumentContentProvider {
@@ -21,7 +25,16 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 			content: "New entry content",
 			tags: ["temp", "entry"]
 		}
-		const createdEntry = await bugoutCreateJournalEntry(accessToken, journalId, tempEntryContent)
+		const createdEntry = await bugoutClient.createEntry(
+			accessToken,
+			journalId,
+			tempEntryContent.title,
+			tempEntryContent.content,
+			tempEntryContent.tags,
+			undefined,
+			undefined,
+			"vscode"
+		)
 
 		const tempUri = vscode.Uri.parse(`file:${tempRootPath}/${journalId}/entries/${createdEntry.id}.md`)
 		await vscode.workspace.fs.writeFile(tempUri, Buffer.from(""))
@@ -119,7 +132,15 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 		}
 		let timeout = setTimeout(async () => {
 			if (this.bugoutTimeoutActive !== undefined) {
-				const updatedEntry = await bugoutUpdateJournalEntry(accessToken, journalId, entryId, entryUpdatedData)
+				const updatedEntry = await bugoutClient.updateEntry(
+					accessToken,
+					journalId,
+					entryId,
+					entryUpdatedData.title,
+					entryUpdatedData.content,
+					entryUpdatedData.tags,
+					BugoutTypes.EntryUpdateTagActions.REPLACE
+				)
 				if (updatedEntry.title === entryUpdatedData.title) {
 					doc.save()
 					vscode.window.showInformationMessage(
@@ -133,5 +154,45 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 
 	public provideTextDocumentContent(uri: vscode.Uri): string {
 		return ""
+	}
+}
+
+export async function uploadImage(rootPath: string, accessToken: string) {
+	const activeEntry = vscode.window.activeTextEditor
+	if (activeEntry) {
+		const path = activeEntry.document.uri.path
+		if (path) {
+			if (path.startsWith(rootPath)) {
+				const pathList = path.split("/")
+				const journalId = pathList[pathList.length - 3]
+				const entryIdList = pathList[pathList.length - 1].split(".")
+				const entryId = entryIdList[0]
+
+				const imagePath = await vscode.window.showInputBox()
+				if (imagePath) {
+					const formData = new FormData()
+					formData.append("image", fs.createReadStream(imagePath))
+					let params = {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+							...formData.getHeaders()
+						}
+					}
+					// TODO(kompotkot): Replace with real spire
+					const result = await axios.post(
+						`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}/image`,
+						formData,
+						params
+					)
+					const imageLink = `![image](${result.data.s3_presigned_url})`
+					// TODO(kompotkot): Calculate normal position
+					activeEntry.edit((editText) => {
+						editText.insert(new vscode.Position(20, 0), imageLink)
+					})
+				}
+			}
+		}
+	} else {
+		vscode.window.showWarningMessage("Uploading image available only from active entry window.")
 	}
 }
