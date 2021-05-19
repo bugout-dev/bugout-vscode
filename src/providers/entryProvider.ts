@@ -7,8 +7,8 @@ import axios from "axios"
 import * as fs from "fs"
 import * as FormData from "form-data"
 
-import { bugoutClient } from "./settings"
-import { entryToMarkdown, markdownToEntry } from "./views"
+import { bugoutClient } from "../utils/settings"
+import { entryToMarkdown, markdownToEntry } from "../views/entryView"
 
 export class EntryDocumentContentProvider implements vscode.TextDocumentContentProvider {
 	/*
@@ -180,7 +180,7 @@ export async function uploadImage(rootPath: string, accessToken: string) {
 					}
 					// TODO(kompotkot): Replace with real spire
 					const result = await axios.post(
-						`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}/image`,
+						`http://127.0.0.1:7475/journals/${journalId}/entries/${entryId}/image`,
 						formData,
 						params
 					)

@@ -3,8 +3,8 @@ Represents webview of Bugout journal search.
 */
 import * as vscode from "vscode"
 
-import { bugoutClient } from "./settings"
-import { searchHTML } from "./views"
+import { bugoutClient } from "../utils/settings"
+import { searchHTML } from "../views/journalView"
 
 export class BugoutSearchResultsProvider {
 	/*

@@ -1,7 +1,7 @@
 import * as vscode from "vscode"
 
-import { GlyphChars } from "./constants"
-import { bugoutClient } from "./settings"
+import { GlyphChars } from "../utils/constants"
+import { bugoutClient } from "../utils/settings"
 
 export async function receiveHumbugExceptions(bugoutToken: string, humbugJournalId: string): Promise<string[]> {
 	/*

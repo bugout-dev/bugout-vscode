@@ -5,7 +5,7 @@ import * as vscode from "vscode"
 import * as path from "path"
 
 import { BugoutSearchResultsProvider } from "./searchProvider"
-import { bugoutClient } from "./settings"
+import { bugoutClient } from "../utils/settings"
 
 export class BugoutTreeProvider implements vscode.TreeDataProvider<BugoutTreeItem> {
 	/*
