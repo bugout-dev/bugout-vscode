@@ -4,7 +4,7 @@ import * as process from "process"
 import * as fs from "fs"
 import { ExtensionContext, ExtensionMode, SecretStorage } from "vscode"
 
-export const bugoutClient = new BugoutClient("http://127.0.0.1:7474", "http://127.0.0.1:7475")
+export const bugoutClient = new BugoutClient()
 
 type BugoutAuthData = {
 	access_token: string | undefined

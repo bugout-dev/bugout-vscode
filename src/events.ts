@@ -49,6 +49,8 @@ export async function registerBugoutTree(context: vscode.ExtensionContext): Prom
 				}
 			})
 		}
+	} else {
+		console.log("Token is not specified")
 	}
 }
 
@@ -91,6 +93,8 @@ export async function registerEntryEditor(): Promise<void> {
 				await uploadImage(settings.tempRootPath, accessToken)
 			}
 		})
+	} else {
+		console.log("Token is not specified")
 	}
 }
 
@@ -131,8 +135,10 @@ export async function registerHumbugHover() {
 					}
 				)
 			})
-		} catch {
-			console.log("Provided token does not have access to this Humbug journal")
+		} catch (err) {
+			console.log("Provided token does not have access to this Crash reports journal. " + err)
 		}
+	} else {
+		console.log("Token or Crash Reports journal ID are not specified")
 	}
 }

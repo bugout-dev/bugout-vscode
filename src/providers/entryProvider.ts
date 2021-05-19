@@ -180,7 +180,7 @@ export async function uploadImage(rootPath: string, accessToken: string) {
 					}
 					// TODO(kompotkot): Replace with real spire
 					const result = await axios.post(
-						`http://127.0.0.1:7475/journals/${journalId}/entries/${entryId}/image`,
+						`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}/image`,
 						formData,
 						params
 					)
