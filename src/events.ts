@@ -88,11 +88,30 @@ export async function registerEntryEditor(): Promise<void> {
 				)
 			}
 		)
-		vscode.commands.registerCommand("Bugout.uploadImage", async () => {
-			if (settings.tempRootPath && accessToken) {
-				await uploadImage(settings.tempRootPath, accessToken)
-			}
-		})
+		// /*
+		// Add in package.json commands:
+		// {
+		// 	"command": "Bugout.uploadImage",
+		// 	"title": "Bugout: Upload Image",
+		// 	"icon": {
+		// 	"light": "resources/light/image.svg",
+		// 	"dark": "resources/dark/image.svg"
+		// 	}
+		// },
+		// Add in package.json menus:
+		// "editor/title": [
+		// 		{
+		// 		"command": "Bugout.uploadImage",
+		// 		"group": "navigation",
+		// 		"when": "resourceDirname =~ /bugout.bugout/"
+		// 		}
+		//	]
+		// */
+		// vscode.commands.registerCommand("Bugout.uploadImage", async () => {
+		// 	if (settings.tempRootPath && accessToken) {
+		// 		await uploadImage(settings.tempRootPath, accessToken)
+		// 	}
+		// })
 	} else {
 		console.log("Token is not specified")
 	}

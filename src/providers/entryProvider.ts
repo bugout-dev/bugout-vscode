@@ -148,7 +148,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 					)
 				}
 			}
-		}, 5000)
+		}, 3000)
 		this.bugoutTimeoutActive = timeout
 	}
 

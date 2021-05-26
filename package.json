@@ -62,24 +62,9 @@
           "when": "view == bugoutView",
           "group": "navigation"
         }
-      ],
-      "editor/title": [
-        {
-          "command": "Bugout.uploadImage",
-          "group": "navigation",
-          "when": "resourceDirname =~ /bugout.bugout/"
-        }
       ]
     },
     "commands": [
-      {
-        "command": "Bugout.uploadImage",
-        "title": "Bugout: Upload Image",
-        "icon": {
-          "light": "resources/light/image.svg",
-          "dark": "resources/dark/image.svg"
-        }
-      },
       {
         "command": "Bugout.setToken",
         "title": "Bugout: Set Access Token"
