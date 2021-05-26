@@ -70,7 +70,7 @@ export class BugoutSearchResultsProvider {
 	}
 
 	public static async searchQuery(extensionUri: vscode.Uri, accessToken: string, journalId: string, q: string) {
-		const searchResults = await bugoutClient.search(accessToken, journalId, q, [], 100, 0, true)
+		const searchResults = await bugoutClient.search(accessToken, journalId, q, [], 25, 0, true)
 		BugoutSearchResultsProvider.createOrShow(extensionUri, accessToken)
 		if (BugoutSearchResultsProvider.currentPanel) {
 			await BugoutSearchResultsProvider.currentPanel.doRefactor(searchResults, journalId)

@@ -178,7 +178,6 @@ export async function uploadImage(rootPath: string, accessToken: string) {
 							...formData.getHeaders()
 						}
 					}
-					// TODO(kompotkot): Replace with real spire
 					const result = await axios.post(
 						`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}/image`,
 						formData,

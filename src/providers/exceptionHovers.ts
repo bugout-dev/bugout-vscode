@@ -11,7 +11,15 @@ export async function receiveHumbugExceptions(bugoutToken: string, humbugJournal
 	let exceptions: string[] = []
 
 	if (humbugJournalId) {
-		const errorsSearchResults = await bugoutClient.search(bugoutToken, humbugJournalId, "tag:type:error", [], 100)
+		const errorsSearchResults = await bugoutClient.search(
+			bugoutToken,
+			humbugJournalId,
+			"tag:type:error",
+			[],
+			100,
+			0,
+			false
+		)
 		errorsSearchResults.results.forEach((journal) => {
 			journal.tags.forEach((tag: string) => {
 				if (tag.startsWith("error:")) {

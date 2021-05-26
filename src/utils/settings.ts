@@ -44,7 +44,7 @@ export default class BugoutSettings {
 			if (humbugJournalId) authData.humbug_journal_id = humbugJournalId
 			this.authStorage.store("bugout_auth", JSON.stringify(authData))
 		} catch (err) {
-			console.log("Unable to store Bugout authentication data in Secret Storage")
+			console.log("Unable to store Bugout authentication data in Secret Storage.", err)
 		}
 	}
 
@@ -87,24 +87,24 @@ export default class BugoutSettings {
 			fs.rmdirSync(rootPath, { recursive: true })
 			fs.mkdirSync(rootPath, { recursive: true })
 			return rootPath
-		} catch (e) {
-			throw new Error("Unable to set tempRootPath")
+		} catch (err) {
+			throw new Error("Unable to set tempRootPath.")
 		}
 	}
 
-	static removeTempEntry(entryPath: string) {
+	static removeTempEntry(entryPath: string): void {
 		try {
 			fs.unlinkSync(entryPath)
-		} catch (e) {
-			// Unable to delete entry file.
+		} catch (err) {
+			console.log("Unable to delete entry file.")
 		}
 	}
 
 	static clean(): void {
 		try {
 			fs.rmdirSync(this._instance.tempRootPath, { recursive: true })
-		} catch (e) {
-			// Unable to clean temp path.
+		} catch (err) {
+			console.log("Unable to clean temp path.")
 		}
 	}
 }

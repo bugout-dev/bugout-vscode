@@ -101,6 +101,9 @@ export async function registerEntryEditor(): Promise<void> {
 export async function registerHumbugHover() {
 	/*
     Exceptions and crash reports Hover search.
+
+	TODO(kompotkot): Fetch data from statistics, 
+	not from search endpoint.
     */
 	const settings = BugoutSettings.instance
 	const currentAuthSettings = await settings.getAuthData()
