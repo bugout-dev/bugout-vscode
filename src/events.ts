@@ -21,10 +21,10 @@ export function registerAuthSetup(): void {
 
 export async function registerBugoutTree(context: vscode.ExtensionContext): Promise<void> {
 	/*
-    Side bar Bugout Tree View.
+	Side bar Bugout Tree View.
 
-    TODO(kompotkot): Implement schema checks as for TextDocumentContentProvider
-    */
+	TODO(kompotkot): Implement schema checks as for TextDocumentContentProvider
+	*/
 	const settings = BugoutSettings.instance
 	const currentAuthSettings = await settings.getAuthData()
 	const accessToken = currentAuthSettings.access_token
@@ -56,8 +56,8 @@ export async function registerBugoutTree(context: vscode.ExtensionContext): Prom
 
 export async function registerEntryEditor(): Promise<void> {
 	/*
-    Entry editor logic.
-    */
+	Entry editor logic.
+	*/
 	const settings = BugoutSettings.instance
 	const currentAuthSettings = await settings.getAuthData()
 	const accessToken = currentAuthSettings.access_token
@@ -88,30 +88,11 @@ export async function registerEntryEditor(): Promise<void> {
 				)
 			}
 		)
-		// /*
-		// Add in package.json commands:
-		// {
-		// 	"command": "Bugout.uploadImage",
-		// 	"title": "Bugout: Upload Image",
-		// 	"icon": {
-		// 	"light": "resources/light/image.svg",
-		// 	"dark": "resources/dark/image.svg"
-		// 	}
-		// },
-		// Add in package.json menus:
-		// "editor/title": [
-		// 		{
-		// 		"command": "Bugout.uploadImage",
-		// 		"group": "navigation",
-		// 		"when": "resourceDirname =~ /bugout.bugout/"
-		// 		}
-		//	]
-		// */
-		// vscode.commands.registerCommand("Bugout.uploadImage", async () => {
-		// 	if (settings.tempRootPath && accessToken) {
-		// 		await uploadImage(settings.tempRootPath, accessToken)
-		// 	}
-		// })
+		vscode.commands.registerCommand("Bugout.uploadImage", async () => {
+			if (settings.tempRootPath && accessToken) {
+				await uploadImage(settings.tempRootPath, accessToken)
+			}
+		})
 	} else {
 		console.log("Token is not specified")
 	}
@@ -119,11 +100,11 @@ export async function registerEntryEditor(): Promise<void> {
 
 export async function registerHumbugHover() {
 	/*
-    Exceptions and crash reports Hover search.
+	Exceptions and crash reports Hover search.
 
 	TODO(kompotkot): Fetch data from statistics, 
 	not from search endpoint.
-    */
+	*/
 	const settings = BugoutSettings.instance
 	const currentAuthSettings = await settings.getAuthData()
 	const accessToken = currentAuthSettings.access_token

@@ -3,9 +3,7 @@ Represents markdown document of Bugout entry.
 */
 import * as vscode from "vscode"
 import { BugoutTypes } from "@bugout/bugout-js"
-import axios from "axios"
 import * as fs from "fs"
-import * as FormData from "form-data"
 
 import { bugoutClient } from "../utils/settings"
 import { entryToMarkdown, markdownToEntry } from "../views/entryView"
@@ -36,7 +34,9 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 			"vscode"
 		)
 
-		const tempUri = vscode.Uri.parse(`file:${tempRootPath}/${journalId}/entries/${createdEntry.id}.md`)
+		const tempUri = vscode.Uri.parse(
+			`file:${tempRootPath}/${journalId}/entries/${createdEntry.id}/${createdEntry.id}.md`
+		)
 		await vscode.workspace.fs.writeFile(tempUri, Buffer.from(""))
 
 		vscode.workspace.openTextDocument(tempUri).then((doc) => {
@@ -79,7 +79,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 		/*
 		Handle logic with editing entry as markdown Text Document.
 		*/
-		const tempUri = vscode.Uri.parse(`file:${tempRootPath}/${journalId}/entries/${entryId}.md`)
+		const tempUri = vscode.Uri.parse(`file:${tempRootPath}/${journalId}/entries/${entryId}/${entryId}.md`)
 		const fileExists = await this.processCurrentEntry(tempUri)
 		vscode.workspace.openTextDocument(tempUri).then((doc) => {
 			vscode.window.showTextDocument(doc, { preserveFocus: true, preview: false }).then((textDoc) => {
@@ -157,36 +157,44 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 	}
 }
 
-export async function uploadImage(rootPath: string, accessToken: string) {
+export async function uploadImage(tempRootPath: string, accessToken: string) {
 	const activeEntry = vscode.window.activeTextEditor
 	if (activeEntry) {
 		const path = activeEntry.document.uri.path
 		if (path) {
-			if (path.startsWith(rootPath)) {
+			if (path.startsWith(tempRootPath)) {
 				const pathList = path.split("/")
-				const journalId = pathList[pathList.length - 3]
-				const entryIdList = pathList[pathList.length - 1].split(".")
-				const entryId = entryIdList[0]
+				const journalId = pathList[pathList.length - 4]
+				// const entryIdList = pathList[pathList.length - 1].split(".")	// ???? why I did it?
+				const entryId = pathList[pathList.length - 2]
 
 				const imagePath = await vscode.window.showInputBox()
 				if (imagePath) {
-					const formData = new FormData()
-					formData.append("image", fs.createReadStream(imagePath))
-					let params = {
-						headers: {
-							Authorization: `Bearer ${accessToken}`,
-							...formData.getHeaders()
+					const uploadImageResponse = await bugoutClient.uploadEntryImage(accessToken, journalId, entryId, imagePath)
+
+					const imageId = uploadImageResponse.id
+					const imageName = uploadImageResponse.name
+					const imageExtension = uploadImageResponse.extension
+					const imageTempPath = `${tempRootPath}/${journalId}/entries/${entryId}/${imageId}${imageExtension}`
+
+					// TODO(kompotkot): Write recursive func or loop with 3 attempts
+					try {
+						const imageStream = await bugoutClient.getEntryImage(accessToken, journalId, entryId, imageId)
+						imageStream.pipe(fs.createWriteStream(imageTempPath))
+					} catch {
+						await sleep(1000)
+						try {
+							const imageStream = await bugoutClient.getEntryImage(accessToken, journalId, entryId, imageId)
+							imageStream.pipe(fs.createWriteStream(imageTempPath))
+						} catch {
+							console.log("Unable to download image")
 						}
 					}
-					const result = await axios.post(
-						`https://spire.bugout.dev/journals/${journalId}/entries/${entryId}/image`,
-						formData,
-						params
-					)
-					const imageLink = `![image](${result.data.s3_presigned_url})`
+
+					const insertImageLink = `![${imageName}](${imageId}${imageExtension})`
 					// TODO(kompotkot): Calculate normal position
 					activeEntry.edit((editText) => {
-						editText.insert(new vscode.Position(20, 0), imageLink)
+						editText.insert(new vscode.Position(20, 0), insertImageLink)
 					})
 				}
 			}
@@ -194,4 +202,10 @@ export async function uploadImage(rootPath: string, accessToken: string) {
 	} else {
 		vscode.window.showWarningMessage("Uploading image available only from active entry window.")
 	}
+}
+
+function sleep(ms) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms)
+	})
 }
