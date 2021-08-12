@@ -79,15 +79,28 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 		/*
 		Handle logic with editing entry as markdown Text Document.
 		*/
-		const tempUri = vscode.Uri.parse(`file:${tempRootPath}/${journalId}/entries/${entryId}/${entryId}.md`)
-		const fileExists = await this.processCurrentEntry(tempUri)
-		vscode.workspace.openTextDocument(tempUri).then((doc) => {
+		const tempUri = `${tempRootPath}/${journalId}/entries/${entryId}`
+		const tempEntryUri = vscode.Uri.parse(`file:${tempUri}/${entryId}.md`)
+		const fileExists = await this.processCurrentEntry(tempEntryUri)
+		vscode.workspace.openTextDocument(tempEntryUri).then((doc) => {
 			vscode.window.showTextDocument(doc, { preserveFocus: true, preview: false }).then((textDoc) => {
 				textDoc.edit(async (editText) => {
 					if (!fileExists) {
 						const entryString = entryToMarkdown(entryTitle, entryContent, entryTags)
 						editText.insert(new vscode.Position(0, 0), entryString)
 					}
+
+					// Upload and save images in folder with entry markdown
+					const images = await bugoutClient.listEntryImages(accessToken, journalId, entryId)
+					images.images.forEach(async (image: BugoutTypes.BugoutEntryImage) => {
+						bugoutClient
+							.downloadEntryImage(accessToken, journalId, entryId, image.id)
+							.then((response) => {
+								response.pipe(fs.createWriteStream(`${tempUri}/${image.name}.${image.extension}`))
+							})
+							.catch((error) => console.log(`Unable to download image with id: ${image.id}`))
+					})
+
 					vscode.workspace.onDidChangeTextDocument(async (editedDoc) => {
 						if (editedDoc.document === doc) {
 							// TODO(kompotkot): Add checks if was not parsed, throw an error
@@ -103,7 +116,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 						console.log("Entry was closed")
 						// console.log(document)
 						// if (document === doc) {
-						// await removeTempEntry(tempUri.path)
+						// await removeTempEntry(tempEntryUri.path)
 						// }
 					})
 				})
@@ -165,36 +178,23 @@ export async function uploadImage(tempRootPath: string, accessToken: string) {
 			if (path.startsWith(tempRootPath)) {
 				const pathList = path.split("/")
 				const journalId = pathList[pathList.length - 4]
-				// const entryIdList = pathList[pathList.length - 1].split(".")	// ???? why I did it?
 				const entryId = pathList[pathList.length - 2]
+
+				const cursorPosition = activeEntry.selection.active
 
 				const imagePath = await vscode.window.showInputBox()
 				if (imagePath) {
-					const uploadImageResponse = await bugoutClient.uploadEntryImage(accessToken, journalId, entryId, imagePath)
 
-					const imageId = uploadImageResponse.id
-					const imageName = uploadImageResponse.name
-					const imageExtension = uploadImageResponse.extension
-					const imageTempPath = `${tempRootPath}/${journalId}/entries/${entryId}/${imageId}${imageExtension}`
+					const uploadImageResponse = await bugoutClient.uploadEntryImage(
+						accessToken, journalId, entryId, imagePath
+					)
 
-					// TODO(kompotkot): Write recursive func or loop with 3 attempts
-					try {
-						const imageStream = await bugoutClient.getEntryImage(accessToken, journalId, entryId, imageId)
-						imageStream.pipe(fs.createWriteStream(imageTempPath))
-					} catch {
-						await sleep(1000)
-						try {
-							const imageStream = await bugoutClient.getEntryImage(accessToken, journalId, entryId, imageId)
-							imageStream.pipe(fs.createWriteStream(imageTempPath))
-						} catch {
-							console.log("Unable to download image")
-						}
-					}
+					const imageTempPath = `${tempRootPath}/${journalId}/entries/${entryId}/${uploadImageResponse.name}.${uploadImageResponse.extension}`
+					fs.createReadStream(imagePath).pipe(fs.createWriteStream(imageTempPath))
 
-					const insertImageLink = `![${imageName}](${imageId}${imageExtension})`
-					// TODO(kompotkot): Calculate normal position
+					const insertImageLink = `![${uploadImageResponse.name}](${uploadImageResponse.name}.${uploadImageResponse.extension})`
 					activeEntry.edit((editText) => {
-						editText.insert(new vscode.Position(20, 0), insertImageLink)
+						editText.insert(new vscode.Position(cursorPosition.line, cursorPosition.character), insertImageLink)
 					})
 				}
 			}

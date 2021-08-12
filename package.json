@@ -120,7 +120,7 @@
     }
   },
   "dependencies": {
-    "@bugout/bugout-js": "^0.0.7",
+    "@bugout/bugout-js": "^0.0.10",
     "showdown": "^1.9.1"
   },
   "devDependencies": {
