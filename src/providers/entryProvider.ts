@@ -81,25 +81,39 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 		*/
 		const tempUri = `${tempRootPath}/${journalId}/entries/${entryId}`
 		const tempEntryUri = vscode.Uri.parse(`file:${tempUri}/${entryId}.md`)
+
 		const fileExists = await this.processCurrentEntry(tempEntryUri)
+
 		vscode.workspace.openTextDocument(tempEntryUri).then((doc) => {
 			vscode.window.showTextDocument(doc, { preserveFocus: true, preview: false }).then((textDoc) => {
 				textDoc.edit(async (editText) => {
 					if (!fileExists) {
 						const entryString = entryToMarkdown(entryTitle, entryContent, entryTags)
 						editText.insert(new vscode.Position(0, 0), entryString)
-					}
 
-					// Upload and save images in folder with entry markdown
-					const images = await bugoutClient.listEntryImages(accessToken, journalId, entryId)
-					images.images.forEach(async (image: BugoutTypes.BugoutEntryImage) => {
+						// Upload and save images in folder with entry markdown
+						console.log("Uploading images")
 						bugoutClient
-							.downloadEntryImage(accessToken, journalId, entryId, image.id)
-							.then((response) => {
-								response.pipe(fs.createWriteStream(`${tempUri}/${image.name}.${image.extension}`))
+							.listEntryImages(accessToken, journalId, entryId)
+							.then((response: BugoutTypes.BugoutEntryImages) => {
+								response.images.forEach(async (image: BugoutTypes.BugoutEntryImage) => {
+									bugoutClient
+										.downloadEntryImage(accessToken, journalId, entryId, image.id)
+										.then((response) => {
+											response.pipe(fs.createWriteStream(`${tempUri}/${image.name}.${image.extension}`))
+										})
+										.catch(() => {
+											vscode.window.showWarningMessage(
+												`Unable to download image with name: ${image.name}.${image.extension}`
+											)
+											console.log(`Unable to download image with id: ${image.id}`)
+										})
+								})
 							})
-							.catch((error) => console.log(`Unable to download image with id: ${image.id}`))
-					})
+							.catch(() => {
+								// There are no images in entry
+							})
+					}
 
 					vscode.workspace.onDidChangeTextDocument(async (editedDoc) => {
 						if (editedDoc.document === doc) {
@@ -184,28 +198,28 @@ export async function uploadImage(tempRootPath: string, accessToken: string) {
 
 				const imagePath = await vscode.window.showInputBox()
 				if (imagePath) {
+					bugoutClient
+						.uploadEntryImage(accessToken, journalId, entryId, imagePath)
+						.then(async (response: BugoutTypes.BugoutEntryImage) => {
+							const imageTempPath = `${tempRootPath}/${journalId}/entries/${entryId}/${response.name}.${response.extension}`
+							fs.createReadStream(imagePath).pipe(fs.createWriteStream(imageTempPath))
 
-					const uploadImageResponse = await bugoutClient.uploadEntryImage(
-						accessToken, journalId, entryId, imagePath
-					)
-
-					const imageTempPath = `${tempRootPath}/${journalId}/entries/${entryId}/${uploadImageResponse.name}.${uploadImageResponse.extension}`
-					fs.createReadStream(imagePath).pipe(fs.createWriteStream(imageTempPath))
-
-					const insertImageLink = `![${uploadImageResponse.name}](${uploadImageResponse.name}.${uploadImageResponse.extension})`
-					activeEntry.edit((editText) => {
-						editText.insert(new vscode.Position(cursorPosition.line, cursorPosition.character), insertImageLink)
-					})
+							const insertImageLink = `![${response.name}](${response.name}.${response.extension})`
+							activeEntry.edit((editText) => {
+								editText.insert(new vscode.Position(cursorPosition.line, cursorPosition.character), insertImageLink)
+							})
+						})
+						.catch((err) => {
+							vscode.window.showWarningMessage(
+								`Unable to upload image from path ${imagePath}. 
+								Please upload images less then 5mb size and with
+								appropriate extension: jpg/png/bmp/gif`
+							)
+						})
 				}
 			}
 		}
 	} else {
 		vscode.window.showWarningMessage("Uploading image available only from active entry window.")
 	}
-}
-
-function sleep(ms) {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms)
-	})
 }
