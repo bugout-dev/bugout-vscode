@@ -92,7 +92,6 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 						editText.insert(new vscode.Position(0, 0), entryString)
 
 						// Upload and save images in folder with entry markdown
-						console.log("Uploading images")
 						bugoutClient
 							.listEntryImages(accessToken, journalId, entryId)
 							.then((response: BugoutTypes.BugoutEntryImages) => {
@@ -100,11 +99,11 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 									bugoutClient
 										.downloadEntryImage(accessToken, journalId, entryId, image.id)
 										.then((response) => {
-											response.pipe(fs.createWriteStream(`${tempUri}/${image.name}.${image.extension}`))
+											response.pipe(fs.createWriteStream(`${tempUri}/${image.id}.${image.extension}`))
 										})
 										.catch(() => {
 											vscode.window.showWarningMessage(
-												`Unable to download image with name: ${image.name}.${image.extension}`
+												`Unable to download image with name: ${image.name}.${image.extension} and id: ${image.id}`
 											)
 											console.log(`Unable to download image with id: ${image.id}`)
 										})
@@ -201,10 +200,10 @@ export async function uploadImage(tempRootPath: string, accessToken: string) {
 					bugoutClient
 						.uploadEntryImage(accessToken, journalId, entryId, imagePath)
 						.then(async (response: BugoutTypes.BugoutEntryImage) => {
-							const imageTempPath = `${tempRootPath}/${journalId}/entries/${entryId}/${response.name}.${response.extension}`
+							const imageTempPath = `${tempRootPath}/${journalId}/entries/${entryId}/${response.id}.${response.extension}`
 							fs.createReadStream(imagePath).pipe(fs.createWriteStream(imageTempPath))
 
-							const insertImageLink = `![${response.name}](${response.name}.${response.extension})`
+							const insertImageLink = `![${response.name}.${response.extension}](${response.id}.${response.extension})`
 							activeEntry.edit((editText) => {
 								editText.insert(new vscode.Position(cursorPosition.line, cursorPosition.character), insertImageLink)
 							})
