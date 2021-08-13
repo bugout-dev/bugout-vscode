@@ -1,7 +1,7 @@
 {
   "name": "Bugout",
   "displayName": "Bugout",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "engines": {
     "vscode": "^1.55.0"
   },
@@ -62,9 +62,24 @@
           "when": "view == bugoutView",
           "group": "navigation"
         }
+      ],
+      "editor/title": [
+        {
+          "command": "Bugout.uploadImage",
+          "group": "navigation",
+          "when": "resourceDirname =~ /bugout.bugout/"
+        }
       ]
     },
     "commands": [
+      {
+        "command": "Bugout.uploadImage",
+        "title": "Bugout: Upload Image",
+        "icon": {
+          "light": "resources/light/image.svg",
+          "dark": "resources/dark/image.svg"
+        }
+      },
       {
         "command": "Bugout.setToken",
         "title": "Bugout: Set Access Token"
@@ -105,7 +120,7 @@
     }
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "@bugout/bugout-js": "^0.0.10",
     "showdown": "^1.9.1"
   },
   "devDependencies": {

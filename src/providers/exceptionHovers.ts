@@ -1,7 +1,7 @@
 import * as vscode from "vscode"
 
-import { bugoutGetSearchResults } from "./calls"
-import { GlyphChars } from "./constants"
+import { GlyphChars } from "../utils/constants"
+import { bugoutClient } from "../utils/settings"
 
 export async function receiveHumbugExceptions(bugoutToken: string, humbugJournalId: string): Promise<string[]> {
 	/*
@@ -11,7 +11,15 @@ export async function receiveHumbugExceptions(bugoutToken: string, humbugJournal
 	let exceptions: string[] = []
 
 	if (humbugJournalId) {
-		const errorsSearchResults = await bugoutGetSearchResults(bugoutToken, humbugJournalId, "tag:type:error")
+		const errorsSearchResults = await bugoutClient.search(
+			bugoutToken,
+			humbugJournalId,
+			"tag:type:error",
+			[],
+			100,
+			0,
+			false
+		)
 		errorsSearchResults.results.forEach((journal) => {
 			journal.tags.forEach((tag: string) => {
 				if (tag.startsWith("error:")) {
@@ -43,7 +51,15 @@ export async function exceptionsUsabilityHover(
 	const codeText = document.getText(wordRange)
 
 	if (humbugExceptions.includes(codeText)) {
-		const searchResults = await bugoutGetSearchResults(bugoutToken, humbugJournalId, `tag:error:${codeText}`, false)
+		const searchResults = await bugoutClient.search(
+			bugoutToken,
+			humbugJournalId,
+			`tag:error:${codeText}`,
+			[],
+			100,
+			0,
+			false
+		)
 		const message = await generateMarkdown(codeText, searchResults, humbugJournalId)
 		return new vscode.Hover(message)
 	} else {

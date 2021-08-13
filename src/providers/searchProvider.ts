@@ -3,8 +3,8 @@ Represents webview of Bugout journal search.
 */
 import * as vscode from "vscode"
 
-import { bugoutGetSearchResults, bugoutGetJournalEntry } from "./calls"
-import { searchHTML } from "./views"
+import { bugoutClient } from "../utils/settings"
+import { searchHTML } from "../views/journalView"
 
 export class BugoutSearchResultsProvider {
 	/*
@@ -45,7 +45,7 @@ export class BugoutSearchResultsProvider {
 						)
 						return
 					case "editEntry":
-						const entryResult = await bugoutGetJournalEntry(
+						const entryResult = await bugoutClient.getEntry(
 							this._accessToken,
 							message.data.journalId,
 							message.data.entryId
@@ -70,7 +70,7 @@ export class BugoutSearchResultsProvider {
 	}
 
 	public static async searchQuery(extensionUri: vscode.Uri, accessToken: string, journalId: string, q: string) {
-		const searchResults = await bugoutGetSearchResults(accessToken, journalId, q, true)
+		const searchResults = await bugoutClient.search(accessToken, journalId, q, [], 25, 0, true)
 		BugoutSearchResultsProvider.createOrShow(extensionUri, accessToken)
 		if (BugoutSearchResultsProvider.currentPanel) {
 			await BugoutSearchResultsProvider.currentPanel.doRefactor(searchResults, journalId)
