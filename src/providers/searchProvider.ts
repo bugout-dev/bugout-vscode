@@ -59,6 +59,13 @@ export class BugoutSearchResultsProvider {
 							entryResult.tags
 						)
 						return
+					case "deleteEntry":
+						vscode.commands.executeCommand(
+							"Bugout.deleteEntry",
+							message.data.journalId,
+							message.data.entryId,
+						)
+						return
 					case "createEntry":
 						vscode.commands.executeCommand("Bugout.createEntry", message.data.journalId)
 						return

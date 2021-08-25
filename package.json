@@ -1,7 +1,7 @@
 {
   "name": "Bugout",
   "displayName": "Bugout",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "engines": {
     "vscode": "^1.55.0"
   },
@@ -97,6 +97,10 @@
         "title": "Bugout: Edit entry"
       },
       {
+        "command": "Bugout.deleteEntry",
+        "title": "Bugout: Delete entry"
+      },
+      {
         "command": "bugoutView.refresh",
         "title": "Refresh",
         "icon": {
@@ -120,7 +124,7 @@
     }
   },
   "dependencies": {
-    "@bugout/bugout-js": "^0.0.10",
+    "@bugout/bugout-js": "^0.0.11",
     "showdown": "^1.9.1"
   },
   "devDependencies": {

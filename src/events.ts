@@ -54,7 +54,7 @@ export async function registerBugoutTree(context: vscode.ExtensionContext): Prom
 	}
 }
 
-export async function registerEntryEditor(): Promise<void> {
+export async function registerEntryEditor(context: vscode.ExtensionContext): Promise<void> {
 	/*
 	Entry editor logic.
 	*/
@@ -88,9 +88,24 @@ export async function registerEntryEditor(): Promise<void> {
 				)
 			}
 		)
+		vscode.commands.registerCommand(
+			"Bugout.deleteEntry",
+			async (
+				journalId: string,
+				entryId: string
+			) => {
+				await entryProvider.bugoutDeleteEntry(
+					context.extensionUri,
+					settings.tempRootPath,
+					accessToken,
+					journalId,
+					entryId,
+				)
+			}
+		)
 		vscode.commands.registerCommand("Bugout.uploadImage", async () => {
 			if (settings.tempRootPath && accessToken) {
-				await uploadImage(settings.tempRootPath, accessToken)
+				await uploadImage(settings.tempRootPath, settings.platform, accessToken)
 			}
 		})
 	} else {

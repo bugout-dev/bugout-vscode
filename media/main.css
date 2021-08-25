@@ -88,6 +88,32 @@
 	border: 1px solid;
 }
 
+.bugout-delete-button {
+	display: inline-flex;
+	appearance: none;
+	-webkit-box-align: center;
+	align-items: center;
+	-webkit-box-pack: center;
+	justify-content: center;
+	transition: all 0.1s ease 0s;
+	user-select: none;
+	position: relative;
+	white-space: nowrap;
+	vertical-align: middle;
+	outline: none;
+	width: fit-content;
+	border-radius: 0.375rem;
+	padding: 1rem;
+	border-style: solid;
+	margin: 0.25rem;
+	min-width: 2.5rem;
+	font-size: 1rem;
+	background: transparent;
+	float: right;
+	cursor: pointer;
+	border: 1px solid #b8383d;
+}
+
 .bugout-entry-tag {
 	display: inline-flex;
 	vertical-align: top;
