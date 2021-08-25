@@ -252,9 +252,7 @@ export async function uploadImage(tempRootPath: string, platform: string, access
 				const basePathUri = vscode.Uri.file(basePath)
 				const pickedFile = await vscode.window.showOpenDialog({ defaultUri: basePathUri, canSelectMany: false, filters: { "Images": ["png", "jpg", "jpeg", "gif", "bmp"] } })
 				if (pickedFile) {
-					const imagePath = pickedFile[0].path
-					console.log(path)
-
+					const imagePath = pickedFile[0].fsPath
 					bugoutClient
 						.uploadEntryImage(accessToken, journalId, entryId, imagePath)
 						.then(async (response: BugoutTypes.BugoutEntryImage) => {
@@ -270,7 +268,7 @@ export async function uploadImage(tempRootPath: string, platform: string, access
 							vscode.window.showWarningMessage(
 								`Unable to upload image from path ${imagePath}. 
 								Please upload images less then 5mb size and with
-								appropriate extension: jpg/png/bmp/gif`
+								appropriate extension: jpg/jpeg/png/bmp/gif`
 							)
 						})
 				}
