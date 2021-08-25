@@ -28,6 +28,20 @@ function editEntry(editButton) {
 	})
 }
 
+function deleteEntry(deleteButton) {
+	/*
+    Process delete entry button, open new windows with markdown editor
+    and content of entry.
+    */
+	vscode.postMessage({
+		command: "deleteEntry",
+		data: {
+			journalId: deleteButton.dataset.journal,
+			entryId: deleteButton.dataset.entry
+		}
+	})
+}
+
 function createEntry(createButton) {
 	/*
     Process create new entry button, open new windows with markdown editor.
@@ -56,6 +70,12 @@ window.onload = () => {
 	Array.from(editEntryButtons, (editButton) => {
 		editButton.addEventListener("click", () => {
 			editEntry(editButton)
+		})
+	})
+	const deleteEntryButtons = document.getElementsByClassName("bugout-delete-button")
+	Array.from(deleteEntryButtons, (deleteButton) => {
+		deleteButton.addEventListener("click", () => {
+			deleteEntry(deleteButton)
 		})
 	})
 }

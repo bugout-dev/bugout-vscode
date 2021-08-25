@@ -11,7 +11,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 	registerAuthSetup()
 
 	await registerBugoutTree(context)
-	await registerEntryEditor()
+	await registerEntryEditor(context)
 	await registerHumbugHover()
 }
 

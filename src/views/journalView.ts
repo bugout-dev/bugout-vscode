@@ -31,6 +31,7 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 <div class="bugout-titles">
 	<h1 class="bugout-entry-title">${entry.title}</h1>
 	<input type="button" class="bugout-edit-button" value="Edit" data-journal="${journalId}" data-entry="${entryId}">
+	<input type="button" class="bugout-delete-button" value="Del" data-journal="${journalId}" data-entry="${entryId}">
 </div>
 <span>${tagsBlock}</span>
 <span class="bugout-entry-markdown">${converter.makeHtml(entry.content)}</span>
@@ -90,6 +91,12 @@ export let searchHTML = (webview: Webview, extensionUri: Uri, journalId: string,
 			const bugoutEntryEditButtons = document.getElementsByClassName("bugout-edit-button");
 			if (bugoutEntryEditButtons.length > 0) {
 				Array.from(bugoutEntryEditButtons, button => {
+					button.style.color = "${colorizeAsThemeOpposite}";
+				})
+			}
+			const bugoutEntryDeleteButtons = document.getElementsByClassName("bugout-delete-button");
+			if (bugoutEntryDeleteButtons.length > 0) {
+				Array.from(bugoutEntryDeleteButtons, button => {
 					button.style.color = "${colorizeAsThemeOpposite}";
 				})
 			}

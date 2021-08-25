@@ -4,8 +4,10 @@ Represents markdown document of Bugout entry.
 import * as vscode from "vscode"
 import { BugoutTypes } from "@bugout/bugout-js"
 import * as fs from "fs"
+import * as path from "path"
 
 import { bugoutClient } from "../utils/settings"
+import { BugoutSearchResultsProvider } from "./searchProvider"
 import { entryToMarkdown, markdownToEntry } from "../views/entryView"
 
 export class EntryDocumentContentProvider implements vscode.TextDocumentContentProvider {
@@ -137,6 +139,57 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 		})
 	}
 
+	public async bugoutDeleteEntry(
+		extensionUri: vscode.Uri,
+		tempRootPath: string,
+		accessToken: string,
+		journalId: string,
+		entryId: string,
+	) {
+		/*
+		Handle logic with deleting entry.
+		*/
+		// const activeEntry = vscode.window.activeTextEditor
+		// if (activeEntry) {
+		// 	let entryPath = activeEntry.document.uri.path
+
+		const tempUri = `${tempRootPath}/${journalId}/entries/${entryId}`
+		const tempEntryUri = vscode.Uri.parse(`file:${tempUri}/${entryId}.md`)
+
+		const fileExists = await this.processCurrentEntry(tempEntryUri)
+
+		vscode.window
+			.showInformationMessage(
+				"Do you want to delete entry?",
+				...["Yes", "No"]
+			)
+			.then((answer) => {
+				if (answer === "Yes") {
+					if (fileExists) {
+						fs.rmdirSync(tempUri, { recursive: true })
+					}
+					bugoutClient
+						.deleteEntry(accessToken, journalId, entryId)
+						.then(async (response: BugoutTypes.BugoutJournalEntry) => {
+							vscode.window.showInformationMessage(
+								`Entry was deleted.`
+							)
+							await BugoutSearchResultsProvider.searchQuery(
+								extensionUri,
+								accessToken,
+								journalId,
+								""
+							)
+						})
+						.catch(() => {
+							vscode.window.showWarningMessage(
+								`Unable to delete entry with id: [${entryId}](https://bugout.dev/app/personal/${journalId}/entries/${entryId})`
+							)
+						})
+				}
+			})
+	}
+
 	private async processCurrentEntry(tempUri: vscode.Uri): Promise<boolean> {
 		let fileExists: boolean
 		try {
@@ -183,13 +236,16 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 	}
 }
 
-export async function uploadImage(tempRootPath: string, accessToken: string) {
+export async function uploadImage(tempRootPath: string, platform: string, accessToken: string) {
 	const activeEntry = vscode.window.activeTextEditor
 	if (activeEntry) {
-		const path = activeEntry.document.uri.path
-		if (path) {
-			if (path.startsWith(tempRootPath)) {
-				const pathList = path.split("/")
+		let entryPath = activeEntry.document.uri.path
+		if (entryPath) {
+			if (platform === "win32") {
+				entryPath = path.join(...entryPath.split(path.posix.sep))
+			}
+			if (entryPath.startsWith(tempRootPath)) {
+				const pathList = entryPath.split("/")
 				const journalId = pathList[pathList.length - 4]
 				const entryId = pathList[pathList.length - 2]
 
