@@ -149,10 +149,6 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 		/*
 		Handle logic with deleting entry.
 		*/
-		// const activeEntry = vscode.window.activeTextEditor
-		// if (activeEntry) {
-		// 	let entryPath = activeEntry.document.uri.path
-
 		const tempUri = `${tempRootPath}/${journalId}/entries/${entryId}`
 		const tempEntryUri = vscode.Uri.parse(`file:${tempUri}/${entryId}.md`)
 
@@ -240,8 +236,10 @@ export async function uploadImage(tempRootPath: string, platform: string, access
 	const activeEntry = vscode.window.activeTextEditor
 	if (activeEntry) {
 		let entryPath = activeEntry.document.uri.path
+		let basePath = entryPath.split(path.posix.sep).slice(0, 3).join("/")	// Path for default uri in Chose File Open Dialog
 		if (entryPath) {
 			if (platform === "win32") {
+				basePath = path.join(...entryPath.split(path.posix.sep).slice(0, 3))
 				entryPath = path.join(...entryPath.split(path.posix.sep))
 			}
 			if (entryPath.startsWith(tempRootPath)) {
@@ -251,8 +249,12 @@ export async function uploadImage(tempRootPath: string, platform: string, access
 
 				const cursorPosition = activeEntry.selection.active
 
-				const imagePath = await vscode.window.showInputBox()
-				if (imagePath) {
+				const basePathUri = vscode.Uri.file(basePath)
+				const pickedFile = await vscode.window.showOpenDialog({ defaultUri: basePathUri, canSelectMany: false, filters: { "Images": ["png", "jpg", "jpeg", "gif", "bmp"] } })
+				if (pickedFile) {
+					const imagePath = pickedFile[0].path
+					console.log(path)
+
 					bugoutClient
 						.uploadEntryImage(accessToken, journalId, entryId, imagePath)
 						.then(async (response: BugoutTypes.BugoutEntryImage) => {
