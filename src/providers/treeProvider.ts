@@ -75,6 +75,11 @@ export class BugoutTreeProvider implements vscode.TreeDataProvider<BugoutTreeIte
 		*/
 		// const tokenColors = getTokenColorsForTheme(themeName);
 		const userJournals = await bugoutClient.listJournals(this._accessToken)
+		userJournals.journals.sort((i, j) => {
+			if (i.name.toUpperCase() < j.name.toUpperCase()) { return -1 }
+			else if (i.name.toUpperCase() > j.name.toUpperCase()) { return 1 }
+			return 0
+		})
 		return userJournals
 	}
 }
