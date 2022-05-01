@@ -162,7 +162,7 @@ export class EntryDocumentContentProvider implements vscode.TextDocumentContentP
 			.then((answer) => {
 				if (answer === "Yes") {
 					if (fileExists) {
-						fs.rmdirSync(tempUri, { recursive: true })
+						fs.rmSync(tempUri, { recursive: true })
 					}
 					bugoutClient
 						.deleteEntry(accessToken, journalId, entryId)

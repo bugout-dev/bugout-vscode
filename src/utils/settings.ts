@@ -84,7 +84,9 @@ export default class BugoutSettings {
 					? path.join(__dirname, "..", "..", "temp")
 					: path.join(this.context.globalStorageUri.fsPath, "temp")
 
-			fs.rmdirSync(rootPath, { recursive: true })
+			if (fs.existsSync(rootPath)) {
+				fs.rmSync(rootPath, { recursive: true })
+			}
 			fs.mkdirSync(rootPath, { recursive: true })
 			return rootPath
 		} catch (err) {
@@ -102,7 +104,7 @@ export default class BugoutSettings {
 
 	static clean(): void {
 		try {
-			fs.rmdirSync(this._instance.tempRootPath, { recursive: true })
+			fs.rmSync(this._instance.tempRootPath, { recursive: true })
 		} catch (err) {
 			console.log("Unable to clean temp path.")
 		}
